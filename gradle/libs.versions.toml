@@ -1,0 +1,32 @@
+[versions]
+agp = "7.4.2"
+kotlin = "1.8.0"
+ksp = "1.8.0-1.0.9"
+compileSdk = "33"
+minSdk = "21"
+targetSdk = "33"
+androidx-lifecycle = "2.6.1"
+kotlin-serialize = "1.5.1"
+publish = "0.25.2"
+
+[plugins]
+publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[libraries]
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlin-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialize" }
+
+androidx-coreKtx = { group = "androidx.core", name = "core-ktx", version = "1.10.1" }
+androidx-lifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
+
+shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.0-SNAPSHOT" }
+shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0-SNAPSHOT" }
+shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.0-SNAPSHOT" }
+
+[bundles]
+shawxing = ["shawxing-kt", "shawxing-androidUtilCore", "shawxing-androidUtilView"]
