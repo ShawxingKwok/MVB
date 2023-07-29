@@ -5,33 +5,26 @@ import androidx.lifecycle.LifecycleOwner
 import kotlin.reflect.KProperty
 
 public interface Savable {
-    public var outState: Bundle
-    public val
+    public class MVBDataContainer{
+        internal val savedMVBData: MutableList<MVBData<*, *>> = mutableListOf()
+    }
 
-    public companion object {
-        public fun onCreate(savedInstanceState: Bundle?) {
+    public val mvbDataContainer: MVBDataContainer
 
-        }
-
-        public fun onSaveInstanceState(outState: Bundle) {
-            // when (v) {
-            //     null -> {}
-            //     is String -> outState.putString(mvbData.name, v)
-            //     is Boolean -> outState.putBoolean(mvbData.name, v)
-            //     is Int -> outState.putInt(mvbData.name, v)
-            //     is Long -> outState.putLong(mvbData.name, v)
-            //     is Float -> outState.putFloat(mvbData.name, v)
-            //     is Double -> outState.putDouble(mvbData.name, v)
-            //     is Parcelable -> outState.putParcelable(mvbData.name, v)
-            //     is Serializable -> outState.putSerializable(mvbData.name, v)
-            //     // is KT serializable ->
-            //     else -> error("Type of ${mvbData.name} is not supported for saving.")
-            // }
-        }
-
-        public fun onDestroy(outState: Bundle){
-
-        }
+    public fun onSaveInstanceState(outState: Bundle) {
+        // when (v) {
+        //     null -> {}
+        //     is String -> outState.putString(mvbData.name, v)
+        //     is Boolean -> outState.putBoolean(mvbData.name, v)
+        //     is Int -> outState.putInt(mvbData.name, v)
+        //     is Long -> outState.putLong(mvbData.name, v)
+        //     is Float -> outState.putFloat(mvbData.name, v)
+        //     is Double -> outState.putDouble(mvbData.name, v)
+        //     is Parcelable -> outState.putParcelable(mvbData.name, v)
+        //     is Serializable -> outState.putSerializable(mvbData.name, v)
+        //     // is KT serializable ->
+        //     else -> error("Type of ${mvbData.name} is not supported for saving.")
+        // }
     }
 }
 
