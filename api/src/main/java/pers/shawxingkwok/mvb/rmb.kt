@@ -5,9 +5,6 @@ import pers.shawxingkwok.ktutil.getOrPutNullable
 import pers.shawxingkwok.ktutil.lazyFast
 import kotlin.reflect.KProperty
 
-/**
- *
- */
 @Suppress("UnusedReceiverParameter")
 public fun <LV, T> LV.rmb(initialize: () -> T): MVBData<LV, T>
     where LV: LifecycleOwner,

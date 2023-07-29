@@ -17,15 +17,11 @@ public fun <LS, T> LS.save(initialize: () -> T): MVBData<LS, T>
     object : MVBData<LS, T>(){
         lateinit var thisRef: LS
 
-        override var isInitialized: Boolean = false
-            private set
-
         val restoredState by lazyFast {
             thisRef.savedStateRegistry.consumeRestoredStateForKey("MVB.save")
         }
 
         val saveState by lazyFast{
-            restoredState // consume first
             val stateProvider = SavedStateRegistry.SavedStateProvider { Bundle() }
             thisRef.savedStateRegistry.registerSavedStateProvider("MVB.save", stateProvider)
             stateProvider.saveState()

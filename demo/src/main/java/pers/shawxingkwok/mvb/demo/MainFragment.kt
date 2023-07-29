@@ -27,7 +27,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        savedStateRegistry.consumeRestoredStateForKey("mystate").let { KLog.d(it) }
+        if (savedInstanceState == null) {
+            val provider = SavedStateRegistry.SavedStateProvider { bundleOf("a" to "initial") }
+            savedStateRegistry.registerSavedStateProvider("mystate", provider)
+        }else {
+            val provider = SavedStateRegistry.SavedStateProvider { bundleOf("a" to "second") }
+            savedStateRegistry.registerSavedStateProvider("mystate", provider)
+            savedStateRegistry.getSavedStateProvider("mystate")?.saveState().let { KLog.d(it) }
+            savedStateRegistry.consumeRestoredStateForKey("mystate").let { KLog.d(it) }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,39 +55,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
-    val bundle = bundleOf("1" to 1)
-
-    override fun onStop() {
-        super.onStop()
-        val provider = SavedStateRegistry.SavedStateProvider { bundle }
-        savedStateRegistry.registerSavedStateProvider("mystate", provider)
-        bundle.putParcelable("S", object : Parcelable{
-            override fun describeContents(): Int {
-                return Parcelable.CONTENTS_FILE_DESCRIPTOR
-            }
-
-            override fun writeToParcel(dest: Parcel, flags: Int) {
-                KLog.d("")
-            }
-        })
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        KLog.d("")
-        bundle.putString("3", "3")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        KLog.d("")
-        bundle.putString("2", "2")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        KLog.d("")
-        savedStateRegistry
-        bundle.putString("4", "4")
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("a", "D")
     }
 }
