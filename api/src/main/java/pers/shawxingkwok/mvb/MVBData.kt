@@ -2,7 +2,6 @@ package pers.shawxingkwok.mvb
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import pers.shawxingkwok.ktutil.KReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -20,39 +19,35 @@ public abstract class MVBData<L: LifecycleOwner, T> : KReadWriteProperty<L, T> {
     public var isInitialized: Boolean = false
         private set
 
-    protected abstract fun initialize()
+    protected abstract fun getInitialValue(): T
+
+    protected abstract fun putValue(key: String, value: T)
 
     private fun initializeIfNotEver(){
         if (!isInitialized) {
-            initialize()
+            t = getInitialValue()
+            putValue(key, t as T)
             isInitialized = true
         }
     }
 
-    protected abstract fun doOnDelegate(thisRef: L, property: KProperty<*>)
-
-    protected abstract fun putValue(key: String, value: T)
-
     final override fun onDelegate(thisRef: L, property: KProperty<*>) {
         key = thisRef.javaClass.canonicalName!! + "." + property.name
-
-        doOnDelegate(thisRef, property)
 
         thisRef.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onCreate(owner: LifecycleOwner) {
                 initializeIfNotEver()
             }
         })
-
         actionsOnDelegate.forEach { it(thisRef, property) }
     }
 
-    override fun getValue(thisRef: L, property: KProperty<*>): T {
+    final override fun getValue(thisRef: L, property: KProperty<*>): T {
         initializeIfNotEver()
         return value
     }
 
-    override fun setValue(thisRef: L, property: KProperty<*>, value: T) {
+    final override fun setValue(thisRef: L, property: KProperty<*>, value: T) {
         isInitialized = true
         t = value
         putValue(key, value)
@@ -60,7 +55,8 @@ public abstract class MVBData<L: LifecycleOwner, T> : KReadWriteProperty<L, T> {
 
     private val actionsOnDelegate = mutableListOf<(L, KProperty<*>) -> Unit>()
 
-    public fun extend(act: (L, KProperty<*>) -> Unit){
+    public fun extend(act: (L, KProperty<*>) -> Unit): MVBData<L, T> {
         actionsOnDelegate += act
+        return this
     }
 }

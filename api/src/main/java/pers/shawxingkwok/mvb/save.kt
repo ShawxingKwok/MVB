@@ -2,62 +2,35 @@ package pers.shawxingkwok.mvb
 
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
-import pers.shawxingkwok.ktutil.lazyFast
+import pers.shawxingkwok.ktutil.KReadWriteProperty
+import pers.shawxingkwok.ktutil.fastLazy
 import java.io.Serializable
-import kotlin.reflect.KProperty
 
 @Suppress("UnusedReceiverParameter")
-public fun <LS, T> LS.save(initialize: () -> T): MVBData<LS, T>
+public fun <LS, T> LS.save(initialize: () -> T): KReadWriteProperty<LS, T>
     where LS: LifecycleOwner, LS: SavedStateRegistryOwner
 =
     object : MVBData<LS, T>(){
-        lateinit var thisRef: LS
-
-        val restoredState by lazyFast {
-            thisRef.savedStateRegistry.consumeRestoredStateForKey("MVB.save")
-        }
-
-        val saveState by lazyFast{
+        val saveState by fastLazy {
             val stateProvider = SavedStateRegistry.SavedStateProvider { Bundle() }
             thisRef.savedStateRegistry.registerSavedStateProvider("MVB.save", stateProvider)
             stateProvider.saveState()
         }
 
-        private fun initializeIfNotEver() {
-            if (!isInitialized) {
-                t =
-                    if (restoredState == null)
-                        initialize()
-                    else
-                        @Suppress("UNCHECKED_CAST")
-                        restoredState!!.get(key) as T
+        override fun getInitialValue(): T {
+            val restoredState = thisRef.savedStateRegistry.consumeRestoredStateForKey("MVB.save")
 
-                isInitialized = true
-            }
+            if (restoredState?.containsKey(key) == true)
+                return restoredState?.get(key) as T
+            else
+                return initialize()
         }
 
-        override fun doOnDelegate(thisRef: LS, property: KProperty<*>) {
-            super.onDelegate(thisRef, property)
-            this.thisRef = thisRef
-
-            thisRef.lifecycle.addObserver(object : DefaultLifecycleObserver{
-                override fun onCreate(owner: LifecycleOwner) {
-                    initializeIfNotEver()
-                }
-            })
-        }
-
-        override fun getValue(thisRef: LS, property: KProperty<*>): T {
-            initializeIfNotEver()
-            return value
-        }
-
-        override fun setValue(thisRef: LS, property: KProperty<*>, value: T) {
-            isInitialized = true
+        // TODO consider support customizing with requiring the converting process is fast.
+        override fun putValue(key: String, value: T) {
             t = value
 
             when (value) {

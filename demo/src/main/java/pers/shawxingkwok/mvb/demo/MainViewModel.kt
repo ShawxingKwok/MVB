@@ -24,4 +24,8 @@ class MainViewModel : ViewModel(){
                 _msgsFlow.update { it + reply }
             }
     }
+
+    init {
+        this
+    }
 }
