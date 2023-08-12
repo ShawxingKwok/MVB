@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import pers.shawxingkwok.ktutil.KReadWriteProperty
 import pers.shawxingkwok.ktutil.fastLazy
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
@@ -72,6 +73,10 @@ public abstract class MVBData<LSV, T>(private val initialize: () -> T) : KReadWr
         isInitialized = true
         t = value
         putValue(key, value)
+    }
+
+    final override fun provideDelegate(thisRef: LSV, property: KProperty<*>): ReadWriteProperty<LSV, T> {
+        return super.provideDelegate(thisRef, property)
     }
 
     private val actionsOnDelegate = mutableListOf<(LSV, KProperty<*>) -> Unit>()
