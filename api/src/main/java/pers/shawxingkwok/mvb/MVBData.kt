@@ -27,11 +27,11 @@ public abstract class MVBData<LSV, T>(private val initialize: () -> T) : KReadWr
 
     private val vm by fastLazy { ViewModelProvider(thisRef)[MVBViewModel::class.java] }
 
+    internal open fun getGetFromOtherSource(): Pair<Boolean, T?> = false to null
+
     protected open fun putValue(key: String, value: T){
         vm.data[key] = value
     }
-
-    internal open fun getGetFromOtherSource(): Pair<Boolean, T?> = false to null
 
     protected fun initializeIfNotEver(){
         if (!isInitialized) {
