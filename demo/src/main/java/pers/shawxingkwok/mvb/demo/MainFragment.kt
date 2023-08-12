@@ -9,39 +9,41 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.enableSavedStateHandles
+import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.savedstate.SavedStateRegistry
 import com.dylanc.viewbinding.nonreflection.binding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.collectOnResume
 import pers.shawxingkwok.androidutil.view.onClick
-import pers.shawxingkwok.androidutil.view.withView
+import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
+import pers.shawxingkwok.mvb.mvbScope
+import pers.shawxingkwok.mvb.observe
+import pers.shawxingkwok.mvb.rmb
 
 class MainFragment : Fragment(R.layout.fragment_main) {
     private val binding by binding(FragmentMainBinding::bind)
-    private val vm: MainViewModel by viewModels()
-
-    private val msgAdapter: MsgAdapter by withView {
-        MsgAdapter().also { binding.rv.adapter = it }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            val provider = SavedStateRegistry.SavedStateProvider { bundleOf("a" to "initial") }
-            savedStateRegistry.registerSavedStateProvider("mystate", provider)
-        }else {
-            val provider = SavedStateRegistry.SavedStateProvider { bundleOf("a" to "second") }
-            savedStateRegistry.registerSavedStateProvider("mystate", provider)
-            savedStateRegistry.getSavedStateProvider("mystate")?.saveState().let { KLog.d(it) }
-            savedStateRegistry.consumeRestoredStateForKey("mystate").let { KLog.d(it) }
-        }
-    }
+    private val msgAdapter: MsgAdapter by fastLazy(::MsgAdapter)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        vm.msgsFlow.collectOnResume{
+        binding.rv.run {
+            adapter = msgAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+        }
+
+        onClicks()
+    }
+
+    private val msgsFlow by
+        rmb { MutableStateFlow(emptyList<Msg>()) }
+        .observe {
             msgAdapter.msgs = it
 
             msgAdapter.update {
@@ -50,13 +52,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
         }
 
+    private fun onClicks(){
         binding.btnSend.onClick {
-            vm.sendMsg(binding.etMsg.text.toString())
-        }
-    }
+            val text = binding.etMsg.text.toString()
+            val greeting = Msg(0, true, text)
+            msgsFlow.update { it + greeting }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString("a", "D")
+            if (text == "How are you")
+                mvbScope.launch {
+                    delay(1000)
+                    val reply = Msg(1, false, "Good")
+                    msgsFlow.update { it + reply }
+                }
+        }
     }
 }

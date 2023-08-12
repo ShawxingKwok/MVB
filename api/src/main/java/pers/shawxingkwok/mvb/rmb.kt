@@ -1,26 +1,14 @@
 package pers.shawxingkwok.mvb
 
 import androidx.lifecycle.*
+import androidx.savedstate.SavedStateRegistryOwner
 import pers.shawxingkwok.ktutil.KReadWriteProperty
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.ktutil.getOrPutNullable
 import kotlin.reflect.KProperty
 
 @Suppress("UnusedReceiverParameter")
-public fun <LV, T> LV.rmb(initialize: () -> T): KReadWriteProperty<LV, T>
-    where LV: LifecycleOwner,
-          LV: ViewModelStoreOwner
+public fun <LSV, T> LSV.rmb(initialize: () -> T): MVBData<LSV, T>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
-    object : MVBData<LV, T>(){
-        val vm by fastLazy { ViewModelProvider(thisRef)[MVBViewModel::class.java] }
-
-        override fun getInitialValue(): T =
-            if (key in vm.data)
-                vm.data[key] as T
-            else
-                initialize()
-
-        override fun putValue(key: String, value: T) {
-            vm.data[key] = value
-        }
-    }
+    object : MVBData<LSV, T>(initialize) { }

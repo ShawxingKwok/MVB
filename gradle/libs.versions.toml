@@ -8,6 +8,14 @@ targetSdk = "33"
 androidx-lifecycle = "2.6.1"
 kotlin-serialize = "1.5.1"
 publish = "0.25.2"
+junit = "4.13.2"
+androidx-test-ext-junit = "1.1.5"
+espresso-core = "3.5.1"
+appcompat = "1.6.1"
+material = "1.9.0"
+constraintlayout = "2.1.4"
+lifecycle-livedata-ktx = "2.6.1"
+lifecycle-viewmodel-ktx = "2.6.1"
 
 [plugins]
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
@@ -20,6 +28,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 [libraries]
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialize" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 
 androidx-coreKtx = { group = "androidx.core", name = "core-ktx", version = "1.10.1" }
 androidx-lifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
@@ -27,6 +36,14 @@ androidx-lifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle
 shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.0-SNAPSHOT" }
 shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0-SNAPSHOT" }
 shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.0-SNAPSHOT" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
 
 [bundles]
 shawxing = ["shawxing-kt", "shawxing-androidUtilCore", "shawxing-androidUtilView"]

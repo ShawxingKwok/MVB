@@ -1,12 +1,12 @@
 package pers.shawxingkwok.androidutil.view
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
 import org.junit.Test
 import org.junit.runner.RunWith
+import pers.shawxingkwok.androidutil.KLog
 
-import org.junit.Assert.*
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -18,7 +18,10 @@ class ExampleInstrumentedTest {
     @Test
     fun useAppContext() {
         // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("pers.shawxingkwok.androidutil.view", appContext.packageName)
+        println(MainFragment::class.constructors.joinToString("\n"))
+        X::class.constructors.joinToString("\n").let { KLog.d(it) }
+        Y::class.constructors.joinToString("\n").let { KLog.d(it) }
     }
 }
+
+class X(val x: Int = 1)

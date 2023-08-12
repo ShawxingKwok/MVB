@@ -14,15 +14,7 @@ class MainViewModel : ViewModel(){
     val msgsFlow: Flow<List<Msg>> get() = _msgsFlow
 
     fun sendMsg(text: String){
-        val greeting = Msg(0, true, text)
-        _msgsFlow.update { it + greeting }
 
-        if (text == "How are you")
-            viewModelScope.launch {
-                delay(1000)
-                val reply = Msg(1, false, "Good")
-                _msgsFlow.update { it + reply }
-            }
     }
 
     init {
