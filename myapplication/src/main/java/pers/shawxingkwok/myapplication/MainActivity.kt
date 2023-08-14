@@ -1,7 +1,9 @@
 package pers.shawxingkwok.myapplication
 
+import android.app.KeyguardManager.KeyguardLockedStateListener
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import pers.shawxingkwok.myapplication.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {

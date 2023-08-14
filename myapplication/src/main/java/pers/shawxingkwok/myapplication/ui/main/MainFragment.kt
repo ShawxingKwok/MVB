@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.lifecycle.enableSavedStateHandles
 import pers.shawxingkwok.myapplication.R
 
 class MainFragment : Fragment() {
@@ -20,6 +21,8 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("KLOG", savedStateRegistry.isRestored.toString())
+
         Log.d("KLOG", arguments.toString())
         arguments = bundleOf("s" to "S")
 
@@ -34,4 +37,7 @@ class MainFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_main, container, false)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+    }
 }
