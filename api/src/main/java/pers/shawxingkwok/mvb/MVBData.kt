@@ -9,7 +9,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
-public open class MVBData<LSV, T>(private val initialize: (() -> T)? = null) : KReadWriteProperty<LSV, T>
+public open class MVBData<LSV, T> internal constructor(private val initialize: (() -> T)? = null) : KReadWriteProperty<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
     private var t: T? = null

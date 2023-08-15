@@ -7,26 +7,30 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.enableSavedStateHandles
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import pers.shawxingkwok.myapplication.R
+import kotlin.concurrent.thread
 
 class MainFragment : Fragment() {
 
     companion object {
         fun newInstance(i: Int) = MainFragment().also { it.arguments = bundleOf("i" to i) }
     }
-
-    private lateinit var viewModel: MainViewModel
+    init {
+        Log.d("KLOG", lifecycle.toString())
+        Log.d("KLOG", lifecycleScope.toString())
+    }
+    private val vm by viewModels<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("KLOG", savedStateRegistry.isRestored.toString())
 
-        Log.d("KLOG", arguments.toString())
         arguments = bundleOf("s" to "S")
-
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         // TODO: Use the ViewModel
     }
 

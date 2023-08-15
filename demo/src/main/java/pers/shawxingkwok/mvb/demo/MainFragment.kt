@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.androidutil.view.onClick
@@ -14,7 +15,11 @@ import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.*
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 
+val flow = flowOf(1)
+
 class MainFragment : Fragment(R.layout.fragment_main) {
+    private val s by ::flow
+
     private val binding by binding(FragmentMainBinding::bind)
     private val msgAdapter: MsgAdapter by fastLazy(::MsgAdapter)
 
@@ -29,10 +34,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         onClicks()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        enableMVBSave()
+        super.onSaveInstanceState(outState)
+    }
+
     private val msgsFlow by
         save (
-            put = Bundle::putParcelableArrayList,
-            initialize = { MutableStateFlow(arrayListOf<Msg>()) },
+            put = Bundle::putParcelableArray,
+            initialize = { MutableStateFlow(emptyArray<Msg>()) },
             convert = { it.value },
             recover = ::MutableStateFlow,
         )
@@ -49,19 +59,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding.btnSend.onClick {
             val text = binding.etMsg.text.toString()
             val greeting = Msg(0, true, text)
-            msgsFlow.update { ArrayList(it + greeting) }
+            msgsFlow.update { it + greeting }
 
             if (text == "How are you")
                 mvbScope.launch {
                     delay(1000)
                     val reply = Msg(1, false, "Good")
-                    msgsFlow.update { ArrayList(it + reply) }
+                    msgsFlow.update { it + reply }
                 }
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        enableMVBSave()
-        super.onSaveInstanceState(outState)
     }
 }

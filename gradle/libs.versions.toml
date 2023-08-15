@@ -32,18 +32,19 @@ kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", vers
 
 androidx-coreKtx = { group = "androidx.core", name = "core-ktx", version = "1.10.1" }
 androidx-lifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
-
-shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.0-SNAPSHOT" }
-shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0-SNAPSHOT" }
-shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.0-SNAPSHOT" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
+
+shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.0" }
+shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0" }
+shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.0" }
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 
 [bundles]
 shawxing = ["shawxing-kt", "shawxing-androidUtilCore", "shawxing-androidUtilView"]

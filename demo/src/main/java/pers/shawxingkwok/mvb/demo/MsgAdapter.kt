@@ -6,7 +6,7 @@ import pers.shawxingkwok.mvb.demo.databinding.ItemMsgReceiveBinding
 import pers.shawxingkwok.mvb.demo.databinding.ItemMsgSendBinding
 
 class MsgAdapter : KRecyclerViewAdapter() {
-    var msgs: List<Msg> = emptyList()
+    var msgs = emptyArray<Msg>()
 
     override fun arrange(binders: MutableList<HolderBinder<ViewBinding>>) {
         binders += msgs.map { msg ->

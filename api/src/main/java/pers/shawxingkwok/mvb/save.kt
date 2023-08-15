@@ -6,19 +6,32 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Size
 import android.util.SizeF
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.Serializable
 import kotlin.reflect.KFunction3
 
+public fun <LSV> LSV.enableMVBSave()
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+{
+    val vm = ViewModelProvider(this)[MVBViewModel::class.java]
+    vm.actionsOnSaveInstanceState.forEach { it(this) }
+}
+
+@PublishedApi
 internal fun <LSV, T, C> LSV._save(
     put: KFunction3<Bundle, String, C?, Unit>? = null,
     initialize: (() -> T)?,
     convert: ((T) -> C)?,
     recover: ((C) -> T)?,
-): MVBData<LSV, T>
+)
+: MVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     object : MVBData<LSV, T>(initialize){
@@ -81,7 +94,8 @@ internal fun <LSV, T, C> LSV._save(
 
 public fun <LSV, T> LSV.save(
     put: KFunction3<Bundle, String, T?, Unit>? = null,
-    initialize: (() -> T)? = null)
+    initialize: (() -> T)? = null
+)
 : MVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
@@ -92,14 +106,75 @@ public fun <LSV, T, C> LSV.save(
     initialize: (() -> T)? = null,
     convert: (T) -> C,
     recover: (C) -> T,
-): MVBData<LSV, T>
+)
+: MVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     _save(put, initialize, convert, recover)
 
-public fun <LSV> LSV.enableMVBSave()
+public fun <LSV, T> LSV.saveMutableStateFlow(
+    put: KFunction3<Bundle, String, T?, Unit>? = null,
+    initialize: () -> T,
+)
+: MVBData<LSV, MutableStateFlow<T>>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
-{
-    val vm = ViewModelProvider(this)[MVBViewModel::class.java]
-    vm.actionsOnSaveInstanceState.forEach { it(this) }
-}
+=
+    _save(put, { MutableStateFlow(initialize()) }, { it.value }, ::MutableStateFlow)
+
+public inline fun <LSV, T, C> LSV.saveMutableStateFlow(
+    put: KFunction3<Bundle, String, C?, Unit>? = null,
+    crossinline initialize: () -> T,
+    crossinline convert: (T) -> C,
+    crossinline recover: (C) -> T,
+)
+: MVBData<LSV, MutableStateFlow<T>>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    _save(
+        put,
+        { MutableStateFlow(initialize()) },
+        { convert(it.value) },
+        { MutableStateFlow(recover(it)) }
+    )
+
+public fun <LSV, T> LSV.saveMutableSharedFlow(
+    put: KFunction3<Bundle, String, List<T>?, Unit>? = null,
+    replay: Int = 0,
+    extraBufferCapacity: Int = 0,
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+)
+: MVBData<LSV, MutableSharedFlow<T>>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    _save(
+        put = put,
+        initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) },
+        convert = { it.replayCache },
+        recover = { replayCache ->
+            val flow = MutableSharedFlow<T>()
+            replayCache.forEach(flow::tryEmit)
+            flow
+        }
+    )
+
+public inline fun <LSV, T, C> LSV.saveMutableSharedFlow(
+    put: KFunction3<Bundle, String, List<C>?, Unit>? = null,
+    crossinline convert: (T) -> C,
+    crossinline recover: (C) -> T,
+    replay: Int = 0,
+    extraBufferCapacity: Int = 0,
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+)
+: MVBData<LSV, MutableSharedFlow<T>>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    _save(
+        put = put,
+        initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) },
+        convert = { it.replayCache.map(convert) },
+        recover = { replayCache ->
+            val flow = MutableSharedFlow<T>()
+            replayCache.map(recover).forEach(flow::tryEmit)
+            flow
+        }
+    )
