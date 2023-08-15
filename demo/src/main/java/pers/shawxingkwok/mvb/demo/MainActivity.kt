@@ -7,19 +7,18 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.mvb.demo.databinding.ActivityMainBinding
-import pers.shawxingkwok.mvb.enableMVBSave
+import pers.shawxingkwok.mvb.rmb
+import pers.shawxingkwok.mvb.save
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    var x by save { 1 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        enableMVBSave()
-        super.onSaveInstanceState(outState)
+        KLog.d(x++)
     }
 }

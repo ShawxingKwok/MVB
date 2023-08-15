@@ -1,25 +1,24 @@
 package pers.shawxingkwok.mvb.demo
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.*
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 
-val flow = flowOf(1)
-
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainFragment : Fragment(R.layout.fragment_main) {
-    private val s by ::flow
-
     private val binding by binding(FragmentMainBinding::bind)
     private val msgAdapter: MsgAdapter by fastLazy(::MsgAdapter)
 
@@ -34,15 +33,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         onClicks()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        enableMVBSave()
-        super.onSaveInstanceState(outState)
-    }
-
     private val msgsFlow by
-        save (
-            put = Bundle::putParcelableArray,
-            initialize = { MutableStateFlow(emptyArray<Msg>()) },
+        save { MutableStateFlow(emptyArray<Msg>()) }
+        .customize(
+            // put = { bundle, key, flow -> bundle.putParcelableArray(key, flow.value) },
+            // get = { bundle, key -> bundle.getParcelableArray(key, Msg::class.java)!!.let(::MutableStateFlow) }
             convert = { it.value },
             recover = ::MutableStateFlow,
         )
