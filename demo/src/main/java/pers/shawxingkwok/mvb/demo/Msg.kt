@@ -6,4 +6,4 @@ import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KFunction3
 
 @Parcelize
-data class Msg(val id: Long, val fromMe: Boolean, val text: String) : Parcelable
+open class Msg(val id: Long, val fromMe: Boolean, val text: String) : Parcelable

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'pers.shawxingkwok.mvb'
+    namespace 'pers.shawxingkwok.mvb.android'
     compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {

@@ -21,11 +21,30 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.parcelize.Parcelize
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.composetest.ui.theme.MVBTheme
+import pers.shawxingkwok.ktutil.KReadWriteProperty
+import pers.shawxingkwok.ktutil.fastLazy
 import kotlin.concurrent.thread
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KProperty
 
 class MainActivity : ComponentActivity() {
     private val vm by viewModels<GameViewModel>()
+
+    var x by object : KReadWriteProperty<Any?, Int>{
+        override fun onDelegate(thisRef: Any?, property: KProperty<*>) {
+            KLog.d(property is KMutableProperty<*>)
+        }
+
+        override fun getValue(thisRef: Any?, property: KProperty<*>): Int {
+            TODO("Not yet implemented")
+        }
+
+        override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+            TODO("Not yet implemented")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

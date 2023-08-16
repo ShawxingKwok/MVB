@@ -1,4 +1,4 @@
-package pers.shawxingkwok.mvb
+package pers.shawxingkwok.mvb.android
 
 import pers.shawxingkwok.androidutil.KLog
 
