@@ -13,7 +13,7 @@ private open class State{
 }
 
 @Suppress("UNCHECKED_CAST")
-public open class MVBData<LSV, T>(
+public open class MVBData<LSV, T> internal constructor(
     private val isSynchronized: Boolean,
     private val thisRef: LSV,
     private val initialize: (() -> T)? = null
