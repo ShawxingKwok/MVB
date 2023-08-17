@@ -48,15 +48,17 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
 
     private fun onClicks(){
+        fun getNewID(): Long = msgsFlow.value.size.toLong()
+
         binding.btnSend.onClick {
             val text = binding.etMsg.text.toString()
-            val greeting = Msg(0, true, text)
+            val greeting = Msg(getNewID(), true, text)
             msgsFlow.update { it + greeting }
 
             if (text == "How are you")
                 mvbScope.launch {
                     delay(1000)
-                    val reply = Msg(1, false, "Good")
+                    val reply = Msg(getNewID(), false, "Good")
                     msgsFlow.update { it + reply }
                 }
         }

@@ -12,7 +12,7 @@ import pers.shawxingkwok.ktutil.updateIf
 import java.util.*
 
 @Suppress("NAME_SHADOWING")
-public class SavableMVBData<LSV, T> @PublishedApi internal constructor(
+public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     isSynchronized: Boolean,
     thisRef: LSV,
     initialize: (() -> T)?,
@@ -24,8 +24,8 @@ public class SavableMVBData<LSV, T> @PublishedApi internal constructor(
     @PublishedApi internal var putToBundle: ((Bundle, String, T) -> Unit)? = null
     @PublishedApi internal var getFromBundle: ((Bundle, String) -> T)? = null
 
-    @PublishedApi internal var convert: ((T) -> Any?)? = null
-    @PublishedApi internal var recover: ((Any?) -> T)? = null
+    @PublishedApi internal var convert: ((T) -> C)? = null
+    @PublishedApi internal var recover: ((C) -> T)? = null
 
     init {
         actionsOnDelegate += { thisRef, key, getValue ->
@@ -38,7 +38,7 @@ public class SavableMVBData<LSV, T> @PublishedApi internal constructor(
                     return@registerSavedStateProvider bundle
                 }
 
-                val saved =
+                val saved: Any? =
                     when{
                         convert != null -> convert!!(v)
                         else -> v
@@ -66,7 +66,7 @@ public class SavableMVBData<LSV, T> @PublishedApi internal constructor(
                             }
 
                         if (recover != null)
-                            recover!!(restored)
+                            recover!!(restored as C)
                         else
                             restored as T
                     }
@@ -80,16 +80,16 @@ public inline fun <LSV, reified T> LSV.save(
     isSynchronized: Boolean = false,
     noinline initialize: (() -> T)?,
 )
-: SavableMVBData<LSV, T>
+: SavableMVBData<LSV, T, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     SavableMVBData(isSynchronized, this, initialize, T::class.java)
 
-public fun <LSV, T> SavableMVBData<LSV, T>.process(
-    putToBundle: (bundle: Bundle, key: String, value: T) -> Unit,
-    getFromBundle: (bundle: Bundle, key: String) -> T,
+public fun <LSV, T, C> SavableMVBData<LSV, T, C>.process(
+    putToBundle: (bundle: Bundle, key: String, value: C) -> Unit,
+    getFromBundle: (bundle: Bundle, key: String) -> C,
 )
-: SavableMVBData<LSV, T>
+: SavableMVBData<LSV, T, C>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
