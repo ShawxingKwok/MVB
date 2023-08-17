@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 
-public class Savable<LSV, T> internal constructor(
+public class SavableMVBData<LSV, T> internal constructor(
     isSynchronized: Boolean,
     thisRef: LSV,
     initialize: (() -> T)?,
@@ -52,16 +52,16 @@ public class Savable<LSV, T> internal constructor(
         }
 }
 
-public fun <LSV, T> LSV.save(isSynchronized: Boolean, initialize: (() -> T)?): Savable<LSV, T>
+public fun <LSV, T> LSV.save(isSynchronized: Boolean, initialize: (() -> T)?): SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
-    Savable(isSynchronized, this, initialize)
+    SavableMVBData(isSynchronized, this, initialize)
 
-public fun <LSV, T> Savable<LSV, T>.process(
+public fun <LSV, T> SavableMVBData<LSV, T>.process(
     convert: ((T) -> Any?)?,
     getFromBundle: (bundle: Bundle, key: String) -> T,
 )
-: Savable<LSV, T>
+: SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
@@ -69,11 +69,11 @@ public fun <LSV, T> Savable<LSV, T>.process(
         it.getFromBundle = getFromBundle
     }
 
-public fun <LSV, T, S> Savable<LSV, T>.process(
+public fun <LSV, T, S> SavableMVBData<LSV, T>.process(
     convert: (T) -> S,
     recover: (S) -> T,
 )
-: Savable<LSV, T>
+: SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
