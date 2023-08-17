@@ -21,9 +21,6 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
 : MVBData<LSV, T>(isSynchronized, thisRef, initialize)
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    @PublishedApi internal var putToBundle: ((Bundle, String, T) -> Unit)? = null
-    @PublishedApi internal var getFromBundle: ((Bundle, String) -> T)? = null
-
     @PublishedApi internal var convert: ((T) -> C)? = null
     @PublishedApi internal var recover: ((C) -> T)? = null
 
@@ -31,12 +28,6 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
         actionsOnDelegate += { thisRef, key, getValue ->
             thisRef.savedStateRegistry.registerSavedStateProvider(key){
                 val v = getValue()
-
-                if (putToBundle != null) {
-                    val bundle = Bundle()
-                    putToBundle!!(bundle, key, v)
-                    return@registerSavedStateProvider bundle
-                }
 
                 val saved: Any? =
                     when{
@@ -56,20 +47,16 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
         when (val restoredState = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)) {
             null -> false to null
             else -> {
-                val v =
-                    if (getFromBundle != null)
-                        getFromBundle!!(restoredState, key)
-                    else {
-                        val restored = restoredState.get(key)
-                            .updateIf({ it is Array<*> && it.isArrayOf<Parcelable>() }) {
-                                Arrays.copyOf(it as Array<Parcelable>, it.size, savedTypeClass as Class<Array<*>>)
-                            }
-
-                        if (recover != null)
-                            recover!!(restored as C)
-                        else
-                            restored as T
+                val restored = restoredState.get(key)
+                    .updateIf({ it is Array<*> && it.isArrayOf<Parcelable>() }) {
+                        Arrays.copyOf(it as Array<Parcelable>, it.size, savedTypeClass as Class<Array<*>>)
                     }
+
+                val v =
+                    if (recover != null)
+                        recover!!(restored as C)
+                    else
+                        restored as T
 
                 true to v
             }
@@ -85,33 +72,33 @@ public inline fun <LSV, reified T> LSV.save(
 =
     SavableMVBData(isSynchronized, this, initialize, T::class.java)
 
-public fun <LSV, T, C> SavableMVBData<LSV, T, C>.process(
-    putToBundle: (bundle: Bundle, key: String, value: C) -> Unit,
-    getFromBundle: (bundle: Bundle, key: String) -> C,
+public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.process(
+    noinline convert: (C) -> D,
+    noinline recover: (D) -> C,
 )
-: SavableMVBData<LSV, T, C>
+: SavableMVBData<LSV, T, D>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
-=
-    also {
-        it.convert = null
-        it.recover = null
+{
+    val newConvert: (T) -> D =
+        when (val oldConvert = this.convert) {
+            null -> convert as (T) -> D
+            else -> { t -> convert(oldConvert(t)) }
+        }
 
-        it.putToBundle = putToBundle
-        it.getFromBundle = getFromBundle
+    val newRecover: (D) -> T =
+        when (val oldRecover = this.recover) {
+            null -> recover as (D) -> T
+            else -> { d -> oldRecover(recover(d)) }
+        }
+
+    return (this as SavableMVBData<LSV, T, D>).also {
+        it.savedTypeClass = D::class.java
+        it.convert = newConvert
+        it.recover = newRecover
     }
+}
 
-public inline fun <LSV, T, reified C> SavableMVBData<LSV, T>.process(
-    noinline convert: (T) -> C,
-    noinline recover: (C) -> T,
-)
-: SavableMVBData<LSV, T>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
-=
-    also {
-        it.putToBundle = null
-        it.getFromBundle = null
+// saveMutableStateFlow
 
-        it.savedTypeClass = C::class.java
-        it.convert = convert
-        it.recover = recover as (Any?) -> T
-    }
+
+// saveMutableStateFlow
