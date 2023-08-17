@@ -16,22 +16,15 @@ private open class State{
 public open class MVBData<LSV, T> internal constructor(
     private val isSynchronized: Boolean,
     private val thisRef: LSV,
-    private val initialize: (() -> T)? = null
+    private var initialize: (() -> T)? = null
 )
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    internal lateinit var key: String
-        private set
-
-    internal val actionsOnDelegate = mutableListOf<(LSV, KProperty<*>) -> Unit>()
+    internal val actionsOnDelegate = mutableListOf<(LSV, String, () -> T) -> Unit>()
 
     internal open fun getValueOnNew(thisRef: LSV, key: String): Pair<Boolean, T?> = false to null
 
-    internal val value get() = getValue()
-
-    private lateinit var getValue: () -> T
-
-    internal operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
+    public operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
         val isMutable = property is KMutableProperty<*>
 
         val propPath = thisRef.javaClass.canonicalName!! + "." + property.name
@@ -42,7 +35,7 @@ public open class MVBData<LSV, T> internal constructor(
 
         var t: T? = null
 
-        key = MVBData::class.qualifiedName + "#" + propPath
+        val key = MVBData::class.qualifiedName + "#" + propPath
 
         val state =
             if (isMutable || !isSynchronized)
@@ -61,30 +54,35 @@ public open class MVBData<LSV, T> internal constructor(
             }
         }
 
-        actionsOnDelegate.forEach { it(thisRef, property) }
-
         fun initializeIfNotEver() {
             if (state.isInitialized) return
 
-            if (key in vm.data) {
-                t = vm.data[key] as T
-                return
-            }
+            val v = vm.getValue(key)
 
-            val (exists, ret) = getValueOnNew(thisRef, key)
+            t =
+                if (v !== UNINITIALIZED) {
+                    MLog.d("$propPath get $v from MVBViewModel.")
+                    v as T
+                } else {
+                    val (exists, ret) = getValueOnNew(thisRef, key)
 
-            if (exists)
-                t = ret as T
-            else {
-                if (initialize == null)
-                    error(
-                        "At $propPath, the lambda 'initialize' is null, which means you should set " +
-                                "the value before you get it."
-                    )
+                    if (exists)
+                        ret as T
+                    else {
+                        if (initialize == null)
+                            error(
+                                "At $propPath, the lambda 'initialize' is null, which means you should set " +
+                                        "the value before you get it."
+                            )
 
-                t = initialize.invoke()
-            }
-            vm.data[key] = t
+                        initialize!!.invoke()
+                    }
+                }
+                .also { vm.setValue(key, it) }
+
+            state.isInitialized = true
+            initialize = null
+            MLog.d("$propPath is initialized.")
         }
 
         return object : ReadWriteProperty<LSV, T>{
@@ -110,8 +108,9 @@ public open class MVBData<LSV, T> internal constructor(
                 //todo: consider moving
                 fun setValue(){
                     state.isInitialized = true
+                    initialize = null
                     t = value
-                    vm.data[key] = value
+                    vm.setValue(key, value)
                 }
 
                 if (isSynchronized)
@@ -120,9 +119,11 @@ public open class MVBData<LSV, T> internal constructor(
                     setValue()
             }
         }
-        .also {
-            getValue = {
-                it.getValue(thisRef, property)
+        .also { delegate ->
+            actionsOnDelegate.forEach { onDelegate ->
+                onDelegate(thisRef, key){
+                    delegate.getValue(thisRef, property)
+                }
             }
         }
     }

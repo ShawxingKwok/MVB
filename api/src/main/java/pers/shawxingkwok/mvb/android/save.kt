@@ -8,31 +8,46 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import pers.shawxingkwok.ktutil.updateIf
+import java.util.*
 
-public class SavableMVBData<LSV, T> internal constructor(
+@Suppress("NAME_SHADOWING")
+public class SavableMVBData<LSV, T> @PublishedApi internal constructor(
     isSynchronized: Boolean,
     thisRef: LSV,
     initialize: (() -> T)?,
+    @PublishedApi internal var savedTypeClass: Class<*>,
 )
 : MVBData<LSV, T>(isSynchronized, thisRef, initialize)
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    internal var convert: ((T) -> Any?)? = null
-    internal var getFromBundle: ((Bundle, String) -> T)? = null
+    @PublishedApi internal var putToBundle: ((Bundle, String, T) -> Unit)? = null
+    @PublishedApi internal var getFromBundle: ((Bundle, String) -> T)? = null
+
+    @PublishedApi internal var convert: ((T) -> Any?)? = null
+    @PublishedApi internal var recover: ((Any?) -> T)? = null
 
     init {
-        actionsOnDelegate += { _, _ ->
+        actionsOnDelegate += { thisRef, key, getValue ->
             thisRef.savedStateRegistry.registerSavedStateProvider(key){
-                val v =
-                    when(val convert = convert){
-                        null -> value
-                        else -> convert(value)
+                val v = getValue()
+
+                if (putToBundle != null) {
+                    val bundle = Bundle()
+                    putToBundle!!(bundle, key, v)
+                    return@registerSavedStateProvider bundle
+                }
+
+                val saved =
+                    when{
+                        convert != null -> convert!!(v)
+                        else -> v
                     }
 
-                if (v is SparseArray<*>)
-                    Bundle().also { it.putSparseParcelableArray(key, v as SparseArray<out Parcelable>) }
+                if (saved is SparseArray<*>)
+                    Bundle().also { it.putSparseParcelableArray(key, saved as SparseArray<out Parcelable>) }
                 else
-                    bundleOf(key to v)
+                    bundleOf(key to saved)
             }
         }
     }
@@ -44,43 +59,59 @@ public class SavableMVBData<LSV, T> internal constructor(
                 val v =
                     if (getFromBundle != null)
                         getFromBundle!!(restoredState, key)
-                    else
-                        restoredState.get(key) as T
+                    else {
+                        val restored = restoredState.get(key)
+                            .updateIf({ it is Array<*> && it.isArrayOf<Parcelable>() }) {
+                                Arrays.copyOf(it as Array<Parcelable>, it.size, savedTypeClass as Class<Array<*>>)
+                            }
+
+                        if (recover != null)
+                            recover!!(restored)
+                        else
+                            restored as T
+                    }
 
                 true to v
             }
         }
 }
 
-public fun <LSV, T> LSV.save(isSynchronized: Boolean, initialize: (() -> T)?): SavableMVBData<LSV, T>
+public inline fun <LSV, reified T> LSV.save(
+    isSynchronized: Boolean = false,
+    noinline initialize: (() -> T)?,
+)
+: SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
-    SavableMVBData(isSynchronized, this, initialize)
+    SavableMVBData(isSynchronized, this, initialize, T::class.java)
 
 public fun <LSV, T> SavableMVBData<LSV, T>.process(
-    convert: ((T) -> Any?)?,
+    putToBundle: (bundle: Bundle, key: String, value: T) -> Unit,
     getFromBundle: (bundle: Bundle, key: String) -> T,
 )
 : SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
-        it.convert = convert
+        it.convert = null
+        it.recover = null
+
+        it.putToBundle = putToBundle
         it.getFromBundle = getFromBundle
     }
 
-public fun <LSV, T, S> SavableMVBData<LSV, T>.process(
-    convert: (T) -> S,
-    recover: (S) -> T,
+public inline fun <LSV, T, reified C> SavableMVBData<LSV, T>.process(
+    noinline convert: (T) -> C,
+    noinline recover: (C) -> T,
 )
 : SavableMVBData<LSV, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
-        it.convert = convert
+        it.putToBundle = null
+        it.getFromBundle = null
 
-        it.getFromBundle = { bundle, key ->
-            val saved = bundle.get(key) as S
-            recover(saved)
-        }
+        it.savedTypeClass = C::class.java
+        it.convert = convert
+        it.recover = recover as (Any?) -> T
     }

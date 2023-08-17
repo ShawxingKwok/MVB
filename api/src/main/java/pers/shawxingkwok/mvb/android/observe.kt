@@ -9,10 +9,10 @@ public fun <LSV, T, F: Flow<T>, M: MVBData<LSV, F>> M.observe(act: (T) -> Unit):
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {
-        it.actionsOnDelegate += { lifecycleOwner, _ ->
+        it.actionsOnDelegate += { lifecycleOwner, _, getValue ->
             lifecycleOwner.lifecycleScope.launch {
                 lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    value.collect(act)
+                    getValue().collect(act)
                 }
             }
         }

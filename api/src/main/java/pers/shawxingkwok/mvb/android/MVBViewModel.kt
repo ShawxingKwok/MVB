@@ -2,16 +2,24 @@ package pers.shawxingkwok.mvb.android
 
 import androidx.lifecycle.ViewModel
 import pers.shawxingkwok.ktutil.fastLazy
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
+internal object UNINITIALIZED
+
 internal class MVBViewModel : ViewModel() {
-    val data = mutableMapOf<String, Any?>()
-}
+    private object NULL
 
-fun main() {
-    val map = ConcurrentHashMap<String, Any?>()
-    map["s"] = null
-    println(map)
-}
+    private val data = ConcurrentHashMap<String, Any>()
 
-public var s by fastLazy { 1 }
+    fun getValue(key: String): Any? =
+        when(val v = data[key]){
+            null -> UNINITIALIZED
+            NULL -> null
+            else -> v
+        }
+
+    fun setValue(key: String, value: Any?){
+        data[key] = value ?: NULL
+    }
+}

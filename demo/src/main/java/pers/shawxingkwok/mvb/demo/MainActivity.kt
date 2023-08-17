@@ -4,11 +4,13 @@ import android.os.*
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.parcelize.Parcelize
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.mvb.android.process
 import pers.shawxingkwok.mvb.demo.databinding.ActivityMainBinding
 import pers.shawxingkwok.mvb.android.save
 import java.io.Serializable
+import java.util.*
 
 // arrayOf<Parcelable> -> Array<Msg> : (toList as List<Msg>).toTypedArray()
 
@@ -16,28 +18,15 @@ import java.io.Serializable
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    val sparseArray by save { SparseArray<Msg>() }
-        .process(
-            convert = null,
-            getFromBundle = { bundle, key ->
-                bundle.getSparseParcelableArray(key, Msg::class.java)!!
-            }
-        )
-
-    private var list by save { listOf<Any?>(F()) }
+    // var serializables by save<_, Array<Msg>>{ arrayOf(Msg(1, false,"")) }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // KLog.d(sparseArray)
-        // sparseArray.append(0, Msg(1, false, "fPG"))
-        KLog.d(list)
-        list += G()
     }
 }
 
-class F : Serializable
-class G : Serializable
+@Parcelize
+class P : Parcelable

@@ -11,12 +11,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pers.shawxingkwok.mvb.android.process
-import pers.shawxingkwok.mvb.android.mvbScope
-import pers.shawxingkwok.mvb.android.observe
-import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.fastLazy
+import pers.shawxingkwok.mvb.android.*
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -39,9 +36,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         save { MutableStateFlow(emptyArray<Msg>()) }
         .process(
             convert = { it.value },
-            getFromBundle = { bundle, key ->
-                MutableStateFlow(bundle.getParcelableArray(key, Msg::class.java)!!)
-            }
+            recover = ::MutableStateFlow,
         )
         .observe {
             msgAdapter.msgs = it
