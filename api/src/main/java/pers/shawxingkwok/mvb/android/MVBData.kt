@@ -16,13 +16,15 @@ private open class State{
 public open class MVBData<LSV, T> internal constructor(
     private val isSynchronized: Boolean,
     private val thisRef: LSV,
-    private var initialize: (() -> T)? = null
+    internal var initialize: (() -> T)? = null
 )
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    internal val actionsOnDelegate = mutableListOf<(LSV, String, () -> T) -> Unit>()
+    protected open fun initializeIfNotEver(thisRef: LSV, key: String): Boolean = false
 
-    internal open fun getValueOnNew(thisRef: LSV, key: String): Pair<Boolean, T?> = false to null
+    protected open fun setValue(value: Any?): Boolean = false
+
+    internal val actionsOnDelegate = mutableListOf<(LSV, String, () -> T) -> Unit>()
 
     public operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
         val isMutable = property is KMutableProperty<*>
@@ -57,31 +59,26 @@ public open class MVBData<LSV, T> internal constructor(
         fun initializeIfNotEver() {
             if (state.isInitialized) return
 
-            val v = vm.getValue(key)
+            if (!this.initializeIfNotEver(thisRef, key)) {
+                val v = vm.getValue(key)
 
-            t =
-                if (v !== UNINITIALIZED) {
-                    MLog.d("$propPath get $v from MVBViewModel.")
-                    v as T
-                } else {
-                    val (exists, ret) = getValueOnNew(thisRef, key)
-
-                    if (exists)
-                        ret as T
-                    else {
+                t =
+                    if (v !== UNINITIALIZED) {
+                        MLog.d("$propPath get $v from MVBViewModel.")
+                        v as T
+                    } else {
                         if (initialize == null)
                             error(
                                 "At $propPath, the lambda 'initialize' is null, which means you should set " +
                                         "the value before you get it."
                             )
 
-                        initialize!!.invoke()
+                        initialize!!.invoke().also { vm.setValue(key, it) }
                     }
-                }
-                .also { vm.setValue(key, it) }
+            }
 
-            state.isInitialized = true
             initialize = null
+            state.isInitialized = true
             MLog.d("$propPath is initialized.")
         }
 
@@ -107,10 +104,12 @@ public open class MVBData<LSV, T> internal constructor(
             override fun setValue(thisRef: LSV, property: KProperty<*>, value: T) {
                 //todo: consider moving
                 fun setValue(){
+                    t = value
+                    if (!this@MVBData.setValue(value))
+                        vm.setValue(key, value)
+
                     state.isInitialized = true
                     initialize = null
-                    t = value
-                    vm.setValue(key, value)
                 }
 
                 if (isSynchronized)
@@ -120,8 +119,8 @@ public open class MVBData<LSV, T> internal constructor(
             }
         }
         .also { delegate ->
-            actionsOnDelegate.forEach { onDelegate ->
-                onDelegate(thisRef, key){
+            actionsOnDelegate.forEach {
+                it(thisRef, key){
                     delegate.getValue(thisRef, property)
                 }
             }

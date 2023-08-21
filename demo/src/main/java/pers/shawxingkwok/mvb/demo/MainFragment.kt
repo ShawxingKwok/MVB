@@ -33,11 +33,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private val msgsFlow by
-        save { MutableStateFlow(emptyArray<Msg>()) }
-        .process(
-            convert = { it.value },
-            recover = ::MutableStateFlow,
-        )
+        rmb { MutableStateFlow(emptyArray<Msg>()) }
+        // .process(
+        //     convert = { it.value },
+        //     recover = ::MutableStateFlow,
+        // )
         .observe {
             msgAdapter.msgs = it
 

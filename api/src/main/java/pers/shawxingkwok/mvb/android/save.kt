@@ -3,17 +3,15 @@
 package pers.shawxingkwok.mvb.android
 
 import android.os.*
-import android.util.SparseArray
-import androidx.core.os.bundleOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
-import pers.shawxingkwok.ktutil.updateIf
-import java.util.*
+import kotlin.reflect.KClass
 
 @Suppress("NAME_SHADOWING")
 public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     isSynchronized: Boolean,
+    private val parcelableKClass: KClass<out Parcelable>?,
     thisRef: LSV,
     initialize: (() -> T)?,
     @PublishedApi internal var savedTypeClass: Class<*>,
@@ -21,46 +19,67 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
 : MVBData<LSV, T>(isSynchronized, thisRef, initialize)
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    @PublishedApi internal var convert: ((T) -> C)? = null
-    @PublishedApi internal var recover: ((C) -> T)? = null
+    @PublishedApi internal var convert: ((Any?) -> Any?)? = null
+    @PublishedApi internal var recover: ((Any?) -> Any?)? = null
+
+    private var saver: Saver? = null
 
     init {
-        actionsOnDelegate += { thisRef, key, getValue ->
+        actionsOnDelegate += { thisRef, key, _ ->
             thisRef.savedStateRegistry.registerSavedStateProvider(key){
-                val v = getValue()
+                val bundle = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
 
-                val saved: Any? =
-                    when{
-                        convert != null -> convert!!(v)
-                        else -> v
+                if (bundle != null) {
+                    // update [convert] to remove any possible references to old [thisRef].
+                    val savedSaver =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                            bundle.getParcelable("", Saver::class.java)
+                        else
+                            bundle.getParcelable("")
+
+                    if (savedSaver != null){
+                        savedSaver.convert = convert
+                        return@registerSavedStateProvider bundle
                     }
+                }
 
-                if (saved is SparseArray<*>)
-                    Bundle().also { it.putSparseParcelableArray(key, saved as SparseArray<out Parcelable>) }
-                else
-                    bundleOf(key to saved)
+                (bundle ?: Bundle()).apply { putParcelable("", saver) }
             }
         }
     }
 
-    override fun getValueOnNew(thisRef: LSV, key: String): Pair<Boolean, T?> =
-        when (val restoredState = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)) {
-            null -> false to null
-            else -> {
-                val restored = restoredState.get(key)
-                    .updateIf({ it is Array<*> && it.isArrayOf<Parcelable>() }) {
-                        Arrays.copyOf(it as Array<Parcelable>, it.size, savedTypeClass as Class<Array<*>>)
-                    }
+    override fun initializeIfNotEver(thisRef: LSV, key: String): Boolean {
+        val restoredState = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
 
-                val v =
-                    if (recover != null)
-                        recover!!(restored as C)
-                    else
-                        restored as T
+        if (parcelableKClass != null)
+            Saver.parcelableLoaderRef.set(parcelableKClass)
 
-                true to v
-            }
+        val savedSaver =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                restoredState.getParcelable(key, Saver::class.java)
+            else
+                restoredState.getParcelable(key)
+
+        if (savedSaver == null)
+            savedSaver = Saver(initialize!!())
+
+        else {
+            if (recover != null)
+                savedSaver.value = recover!!(savedSaver.value)
+
+            true to savedSaver.value as T
         }
+        return true
+    }
+
+    override fun setValue(value: Any?): Boolean {
+        if (saver == null)
+            saver = Saver(value)
+        else
+            saver!!.value = value
+
+        return true
+    }
 }
 
 public inline fun <LSV, reified T> LSV.save(

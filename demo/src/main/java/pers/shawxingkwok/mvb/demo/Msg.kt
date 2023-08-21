@@ -1,6 +1,7 @@
 package pers.shawxingkwok.mvb.demo
 
 import android.os.Bundle
+import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KFunction3

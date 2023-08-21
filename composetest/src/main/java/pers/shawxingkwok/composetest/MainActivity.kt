@@ -1,11 +1,7 @@
 package pers.shawxingkwok.composetest
 
-import android.app.KeyguardManager.KeyguardLockedStateListener
-import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
+import android.os.*
 import android.util.Log
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -19,42 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.parcelize.Parcelize
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.composetest.ui.theme.MVBTheme
-import pers.shawxingkwok.ktutil.KReadWriteProperty
-import pers.shawxingkwok.ktutil.fastLazy
-import kotlin.concurrent.thread
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
 
 class MainActivity : ComponentActivity() {
     private val vm by viewModels<GameViewModel>()
 
-    var x by object : KReadWriteProperty<Any?, Int>{
-        override fun onDelegate(thisRef: Any?, property: KProperty<*>) {
-            KLog.d(property is KMutableProperty<*>)
-        }
-
-        override fun getValue(thisRef: Any?, property: KProperty<*>): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
-            TODO("Not yet implemented")
-        }
-    }
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Bundle()
-        savedInstanceState?.get("LEU").let {
-            it ?: Log.d("KLOG", "null").also { return@let  }
-            Log.d("KLOG", it.toString())
-            Log.d("KLOG", (it as F).toString())
-            Log.d("KLOG", (it as F).i.toString())
-        }
 
         setContent {
             MVBTheme {
@@ -64,17 +34,43 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        KLog.d(savedInstanceState)
+        savedInstanceState?.get("fa").let { KLog.d(it) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val bundle = bundleOf("LEU" to F(1))
-        outState.putAll(bundle)
+        outState.putParcelable("fa", FA(arrayListOf(M(1), SubM(2))))
     }
 }
 
 @Parcelize
-class F(val i: Int) : Parcelable
+open class M(val i: Int) : Parcelable
+
+@Parcelize
+class SubM(val s: Int) : M(1)
+
+class FA(val ms: ArrayList<M>) : Parcelable {
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeBundle(bundleOf("key" to ms))
+    }
+
+    companion object CREATOR : Parcelable.Creator<FA> {
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+        override fun createFromParcel(parcel: Parcel): FA {
+            val ms = parcel.readBundle()!!.get("key")!! as ArrayList<M>
+            return FA(ms)
+        }
+
+        override fun newArray(size: Int): Array<FA?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
