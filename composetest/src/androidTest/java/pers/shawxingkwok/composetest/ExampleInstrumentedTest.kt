@@ -1,5 +1,6 @@
 package pers.shawxingkwok.composetest
 
+import android.os.Parcel
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 

@@ -13,5 +13,7 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
+        arrayOf("") as Array<CharSequence>
+        arrayOf<CharSequence>("") as Array<String>
     }
 }

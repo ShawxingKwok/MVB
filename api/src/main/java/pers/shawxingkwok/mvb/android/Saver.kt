@@ -1,12 +1,10 @@
 package pers.shawxingkwok.mvb.android
 
+import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.savedstate.SavedStateRegistryOwner
-import pers.shawxingkwok.ktutil.KReadWriteProperty
-import java.util.concurrent.atomic.AtomicReference
+import pers.shawxingkwok.ktutil.updateIf
+import java.util.*
 import kotlin.reflect.KClass
 
 internal class Saver(
@@ -18,33 +16,35 @@ internal class Saver(
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
+        if (value === UNINITIALIZED) return
+        dest.writeValue(true)
         val v: Any? = if (convert != null) convert!!(value) else value
         dest.writeValue(v)
+        MLog.d("Write $v in parcel.")
     }
 
     companion object CREATOR : Parcelable.Creator<Saver> {
-        val parcelableLoaderRef = AtomicReference<KClass<out Parcelable>>()
+        var parcelableLoader: ClassLoader? = null
+        var arrayClass: Class<Array<*>>? = null
+        var recover: ((Any?) -> Any?)? = null
 
-        override fun createFromParcel(parcel: Parcel): Saver =
-            parcelableLoaderRef
-                .getAndSet(null)
-                ?.java
-                ?.classLoader
-                .let(parcel::readValue)
-                .let(::Saver)
+        override fun createFromParcel(parcel: Parcel): Saver {
+            @SuppressLint("ParcelClassLoader")
+            val tag = parcel.readValue(null)
+
+            val value: Any? =
+                if (tag == null)
+                    UNINITIALIZED
+                else
+                    parcel.readValue(parcelableLoader)
+                    .updateIf({ arrayClass != null }){
+                        Arrays.copyOf(it as Array<*>, it.size, arrayClass!!)
+                    }
+                    .updateIf({ recover != null }, recover!!)
+
+            return Saver(value)
+        }
 
         override fun newArray(size: Int): Array<Saver?> = arrayOfNulls(size)
     }
-}
-
-public fun <LSV, T, D> LSV.saveWithTransform(
-    value: T,
-    convert: (T) -> D,
-    recover: (D) -> T,
-)
-: KReadWriteProperty<LSV, T>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
-{
-    // Bundle().getParcelable()
-    TODO()
 }

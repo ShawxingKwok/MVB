@@ -15,25 +15,11 @@ import java.util.concurrent.atomic.AtomicReference
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    // var serializables by save<_, Array<Msg>>{ arrayOf(Msg(1, false,"")) }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        Container.classLoaderRef.set(P::class.java.classLoader)
-        savedInstanceState?.getParcelable<Container>("").let { KLog.d(it?.value) }
-        val bundle = savedInstanceState?.get("bundle") as Bundle?
-        bundle?.get("s").let { KLog.d(it) }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val value = SparseArray<P>().also { it.append(0, P(0)) }
-        outState.putParcelable("", Container(value))
-        // outState.putParcelable("bundle", bundleOf("s" to value))
     }
 }
 

@@ -5,7 +5,6 @@ import pers.shawxingkwok.ktutil.fastLazy
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
-internal object UNINITIALIZED
 
 internal class MVBViewModel : ViewModel() {
     private object NULL

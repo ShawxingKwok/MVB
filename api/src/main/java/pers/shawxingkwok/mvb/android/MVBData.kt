@@ -4,6 +4,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import pers.shawxingkwok.androidutil.KLog
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
@@ -16,15 +17,16 @@ private open class State{
 public open class MVBData<LSV, T> internal constructor(
     private val isSynchronized: Boolean,
     private val thisRef: LSV,
-    internal var initialize: (() -> T)? = null
+    private val initialize: (() -> T)? = null
 )
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    protected open fun initializeIfNotEver(thisRef: LSV, key: String): Boolean = false
-
-    protected open fun setValue(value: Any?): Boolean = false
-
     internal val actionsOnDelegate = mutableListOf<(LSV, String, () -> T) -> Unit>()
+
+    internal lateinit var key: String
+        private set
+
+    internal open val saver: Saver? = null
 
     public operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
         val isMutable = property is KMutableProperty<*>
@@ -37,7 +39,7 @@ public open class MVBData<LSV, T> internal constructor(
 
         var t: T? = null
 
-        val key = MVBData::class.qualifiedName + "#" + propPath
+        key = MVBData::class.qualifiedName + "#" + propPath
 
         val state =
             if (isMutable || !isSynchronized)
@@ -59,45 +61,50 @@ public open class MVBData<LSV, T> internal constructor(
         fun initializeIfNotEver() {
             if (state.isInitialized) return
 
-            if (!this.initializeIfNotEver(thisRef, key)) {
+            requireNotNull(initialize){
+                "At $propPath, the lambda 'initialize' is null, which means you should set " +
+                "the value before you get it."
+            }
+
+            val saver = saver
+            if (saver != null) {
+                if (saver.value == UNINITIALIZED)
+                    saver.value = initialize.invoke()
+            }else {
                 val v = vm.getValue(key)
 
                 t =
                     if (v !== UNINITIALIZED) {
-                        MLog.d("$propPath get $v from MVBViewModel.")
                         v as T
-                    } else {
-                        if (initialize == null)
-                            error(
-                                "At $propPath, the lambda 'initialize' is null, which means you should set " +
-                                        "the value before you get it."
-                            )
-
-                        initialize!!.invoke().also { vm.setValue(key, it) }
-                    }
+                    } else
+                        initialize.invoke().also { vm.setValue(key, it) }
             }
-
-            initialize = null
             state.isInitialized = true
             MLog.d("$propPath is initialized.")
         }
 
         return object : ReadWriteProperty<LSV, T>{
+            val getValue = {
+                if (saver != null) saver!!.value.also { MLog.d(it) }
+                else t.also { MLog.d(it) }
+            }
+
             override fun getValue(thisRef: LSV, property: KProperty<*>): T =
                 when{
                     isSynchronized && isMutable ->
                         synchronized(this){
                             initializeIfNotEver()
-                            t
+                            getValue()
                         }
                     isSynchronized -> {
                         if (!state.isInitialized)
                             synchronized(this, ::initializeIfNotEver)
-                        t
+
+                        getValue()
                     }
                     else -> {
                         initializeIfNotEver()
-                        t
+                        getValue()
                     }
                 } as T
 
@@ -105,11 +112,13 @@ public open class MVBData<LSV, T> internal constructor(
                 //todo: consider moving
                 fun setValue(){
                     t = value
-                    if (!this@MVBData.setValue(value))
+
+                    if (saver != null)
+                        saver!!.value = value
+                    else
                         vm.setValue(key, value)
 
                     state.isInitialized = true
-                    initialize = null
                 }
 
                 if (isSynchronized)

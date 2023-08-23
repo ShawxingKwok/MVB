@@ -25,13 +25,6 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewLifecycleOwnerLiveData.observe(this){
-            KLog.d(it.lifecycle.currentState)
-        }
-
-        arguments = bundleOf("s" to "S")
-        // TODO: Use the ViewModel
     }
 
     override fun onCreateView(

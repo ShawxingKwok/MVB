@@ -6,15 +6,19 @@ import android.os.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.*
 import kotlin.reflect.KClass
 
 @Suppress("NAME_SHADOWING")
 public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     isSynchronized: Boolean,
-    private val parcelableKClass: KClass<out Parcelable>?,
+    @PublishedApi internal var parcelableKClass: KClass<out Parcelable>?,
+    @PublishedApi internal var savedType: KClass<C & Any>,
     thisRef: LSV,
     initialize: (() -> T)?,
-    @PublishedApi internal var savedTypeClass: Class<*>,
 )
 : MVBData<LSV, T>(isSynchronized, thisRef, initialize)
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
@@ -22,102 +26,139 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
     @PublishedApi internal var recover: ((Any?) -> Any?)? = null
 
-    private var saver: Saver? = null
+    override val saver by lazy(Saver.CREATOR){
+        val bundle = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
+
+        if (bundle != null) {
+            Saver.parcelableLoader = (parcelableKClass ?: savedType.parcelableKClass)?.java?.classLoader
+            Saver.arrayClass = savedType.java.takeIf { it.isArray } as Class<Array<*>>?
+            Saver.recover = recover
+
+            // update [convert] to remove any possible references to old [thisRef].
+            val saver =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    bundle.getParcelable("", Saver::class.java)!!
+                else
+                    bundle.getParcelable("")!!
+
+            Saver.recover = null
+            saver.convert = convert
+            saver
+        }else
+            Saver(UNINITIALIZED, convert)
+    }
 
     init {
         actionsOnDelegate += { thisRef, key, _ ->
             thisRef.savedStateRegistry.registerSavedStateProvider(key){
-                val bundle = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
-
-                if (bundle != null) {
-                    // update [convert] to remove any possible references to old [thisRef].
-                    val savedSaver =
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                            bundle.getParcelable("", Saver::class.java)
-                        else
-                            bundle.getParcelable("")
-
-                    if (savedSaver != null){
-                        savedSaver.convert = convert
-                        return@registerSavedStateProvider bundle
-                    }
-                }
-
-                (bundle ?: Bundle()).apply { putParcelable("", saver) }
+                Bundle().also { it.putParcelable("", saver) }
             }
         }
     }
+}
 
-    override fun initializeIfNotEver(thisRef: LSV, key: String): Boolean {
-        val restoredState = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
+@PublishedApi
+internal val KClass<*>.isParcelableType: Boolean get() = Parcelable::class.java.isAssignableFrom(this.java)
 
-        if (parcelableKClass != null)
-            Saver.parcelableLoaderRef.set(parcelableKClass)
+@PublishedApi
+internal val KClass<*>.parcelableKClass: KClass<out Parcelable>? get(){
+    if (Parcelable::class.java.isAssignableFrom(this.java))
+        return this as KClass<out Parcelable>
 
-        val savedSaver =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                restoredState.getParcelable(key, Saver::class.java)
-            else
-                restoredState.getParcelable(key)
+    val component = java.componentType ?: return null
+    if (Parcelable::class.java.isAssignableFrom(component))
+        return component.kotlin as KClass<out Parcelable>
 
-        if (savedSaver == null)
-            savedSaver = Saver(initialize!!())
-
-        else {
-            if (recover != null)
-                savedSaver.value = recover!!(savedSaver.value)
-
-            true to savedSaver.value as T
-        }
-        return true
-    }
-
-    override fun setValue(value: Any?): Boolean {
-        if (saver == null)
-            saver = Saver(value)
-        else
-            saver!!.value = value
-
-        return true
-    }
+    return null
 }
 
 public inline fun <LSV, reified T> LSV.save(
     isSynchronized: Boolean = false,
+    parcelableKClass: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)?,
 )
 : SavableMVBData<LSV, T, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
-    SavableMVBData(isSynchronized, this, initialize, T::class.java)
+    SavableMVBData(
+        isSynchronized = isSynchronized,
+        parcelableKClass = parcelableKClass.also { require(it?.isParcelableType ?: true) },
+        savedType = T::class as KClass<T & Any>,
+        thisRef = this,
+        initialize = initialize
+    )
 
-public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.process(
+public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.transform(
     noinline convert: (C) -> D,
     noinline recover: (D) -> C,
 )
 : SavableMVBData<LSV, T, D>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
-{
-    val newConvert: (T) -> D =
-        when (val oldConvert = this.convert) {
-            null -> convert as (T) -> D
-            else -> { t -> convert(oldConvert(t)) }
+=
+    (this as SavableMVBData<LSV, T, D>).also {
+        it.savedType = D::class as KClass<D & Any>
+
+        it.convert = when (val oldConvert = it.convert) {
+            null -> convert as (Any?) -> Any?
+            else -> { t -> convert(oldConvert(t) as C) }
         }
 
-    val newRecover: (D) -> T =
-        when (val oldRecover = this.recover) {
-            null -> recover as (D) -> T
-            else -> { d -> oldRecover(recover(d)) }
+        it.recover = when (val oldRecover = it.recover) {
+            null -> recover as (Any?) -> Any?
+            else -> { d -> oldRecover(recover(d as D)) }
         }
-
-    return (this as SavableMVBData<LSV, T, D>).also {
-        it.savedTypeClass = D::class.java
-        it.convert = newConvert
-        it.recover = newRecover
     }
-}
 
-// saveMutableStateFlow
+public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
+    isSynchronized: Boolean = false,
+    parcelableKClass: KClass<out Parcelable>? = null,
+    noinline initialize: () -> T,
+)
+: SavableMVBData<LSV, MutableStateFlow<T>, T>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    save<LSV, MutableStateFlow<T>>(
+        isSynchronized = isSynchronized,
+        parcelableKClass = parcelableKClass,
+        initialize = { MutableStateFlow(initialize()) }
+    )
+    .transform(
+        convert = MutableStateFlow<T>::value,
+        recover = ::MutableStateFlow
+    )
 
+public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
+    isSynchronized: Boolean = false,
+    parcelableKClass: KClass<out Parcelable>? = null,
+    replay: Int = 0,
+    extraBufferCapacity: Int = 0,
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+)
+: SavableMVBData<LSV, MutableSharedFlow<T>, List<T>>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    save<LSV, MutableSharedFlow<T>>(
+        isSynchronized = isSynchronized,
+        parcelableKClass = parcelableKClass,
+        initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) }
+    )
+    .transform<LSV, MutableSharedFlow<T>, MutableSharedFlow<T>, List<T>>(
+        convert = { it.replayCache },
+        recover = { cache ->
+            val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
 
-// saveMutableStateFlow
+            cache.map{
+                if(it is Array<*>)
+                    Arrays.copyOf(it as Array<*>, it.size, T::class.java as Class<out Array<T>>) as T
+                else
+                    it
+            }
+            .forEach(flow::tryEmit)
+
+            flow
+        }
+    )
+    .also {
+        if (it.parcelableKClass == null)
+            it.parcelableKClass = T::class.parcelableKClass
+    }
