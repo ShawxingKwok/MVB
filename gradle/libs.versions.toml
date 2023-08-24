@@ -1,6 +1,6 @@
 [versions]
 agp = "7.4.2"
-kotlin = "1.8.10"
+kotlin = "1.8.0"
 ksp = "1.8.0-1.0.9"
 compileSdk = "33"
 minSdk = "21"
@@ -26,6 +26,7 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version = "1.7.20" }
 
 [libraries]
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
@@ -40,9 +41,9 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
 
-shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.0" }
+shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.2" }
 shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0" }
-shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.0" }
+shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.2" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }

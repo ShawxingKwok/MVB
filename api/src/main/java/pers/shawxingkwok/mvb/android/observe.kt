@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.androidutil.KLog
 
-public fun <LSV, T, F: Flow<T>, M: MVBData<LSV, F>> M.observe(act: (T) -> Unit): M
+public fun <LSV, T, F: Flow<T>, M: MVBData<LSV, F>> M.observe(act: suspend (T) -> Unit): M
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     also {

@@ -18,6 +18,7 @@ import kotlinx.parcelize.Parcelize
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.myapplication.ui.main.MainFragment
 import pers.shawxingkwok.myapplication.ui.main.MainViewModel
+import java.io.Serializable
 
 class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -55,6 +56,9 @@ open class M(val i: Int) : Parcelable
 @Parcelize
 class SubM(val a: String, val s: Int) : M(1)
 
+class Sub : Super(), Serializable
+open class Super : Serializable
+
 class P(val ms: Array<M>) : Parcelable {
     override fun describeContents(): Int {
         return 0
@@ -62,6 +66,7 @@ class P(val ms: Array<M>) : Parcelable {
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         // dest.writeParcelableArray(ms, flags)
+        dest.writeValue(arrayOf(Sub(), Sub()))
         dest.writeValue(ms)
     }
 
@@ -69,6 +74,7 @@ class P(val ms: Array<M>) : Parcelable {
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun createFromParcel(parcel: Parcel): P {
             KLog.d("on create from parcel")
+            parcel.readValue(null).let { KLog.d(it.toString()) }
             val ms = parcel.readValue(M::class.java.classLoader) as Array<Parcelable>
             // val ms = parcel.readParcelableArray(M::class.java.classLoader, M::class.java)!!
             return P(ms.map { it as M }.toTypedArray())

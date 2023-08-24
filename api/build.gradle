@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.publish)
 }
 
 android {
@@ -46,11 +47,31 @@ dependencies {
 }
 
 tasks.withType(KotlinCompile).configureEach{
-    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
+    kotlinOptions.freeCompilerArgs += [
+        "-Xexplicit-api=warning",
+        "-Xcontext-receivers"
+    ]
 }
 
-tasks.withType(KotlinCompile).configureEach{
-    kotlinOptions.freeCompilerArgs += [
-        "-Xexplicit-api=warning"
-    ]
+// publish
+mavenPublishing {
+    def artifactId = "mvb-android"
+    def version = "1.0.0"
+    def isSnapshot = true
+
+    if (isSnapshot) version += "-SNAPSHOT"
+    pom {
+        coordinates("io.github.shawxingkwok", artifactId, version)
+        def repoName = "MVB"
+        name = repoName
+        description = "MVB architecture on Android"
+        inceptionYear = "2023"
+
+        url = "https://github.com/ShawxingKwok/$repoName/"
+
+        scm{
+            connection = "scm:git:git://github.com/ShawxingKwok/${repoName}.git"
+            developerConnection = "scm:git:ssh://git@github.com/ShawxingKwok/${repoName}.git"
+        }
+    }
 }
