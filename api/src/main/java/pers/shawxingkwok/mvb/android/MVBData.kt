@@ -34,7 +34,7 @@ public open class MVBData<LSV, T> internal constructor(
         val propPath = thisRef.javaClass.canonicalName!! + "." + property.name
 
         require(isMutable || initialize != null){
-            "$propPath can't be mutable with a null `initialize`."
+            "$propPath can't be immutable with a null `initialize`."
         }
 
         var t: T? = null

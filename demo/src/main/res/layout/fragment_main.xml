@@ -1,53 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainFragment">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:paddingTop="120dp"
+              android:background="@color/black"
+              tools:context=".MainActivity">
 
     <TextView
-            android:layout_marginVertical="12dp"
-            android:id="@+id/tv_name"
-            android:text="Lily"
-            android:textSize="24sp"
+            android:id="@+id/tv_duration"
             android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="100sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
     <LinearLayout
+            android:layout_marginTop="100dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
-        <EditText
-                android:id="@+id/et_msg"
+        <TextView
+                android:id="@+id/tv_left"
+                android:layout_marginStart="32dp"
+                android:textColor="@color/white"
+                android:textAllCaps="false"
+                android:background="@drawable/circle_dark_grey"
+                android:text="Lap"
+                android:gravity="center"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
+
+        <Space
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Type message here"
-                android:textAllCaps="false"
-                android:maxLines="2"
-                android:gravity="start"/>
+                android:layout_height="match_parent"/>
 
-        <Button
-                android:id="@+id/btn_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send"
+        <TextView
+                android:id="@+id/tv_right"
+                android:gravity="center"
+                android:text="Start"
+                android:textColor="@color/dark_green"
+                android:background="@drawable/circle_light_green"
                 android:textAllCaps="false"
-                android:textSize="20sp"/>
+                android:layout_marginEnd="32dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
     </LinearLayout>
-    <Space
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv"
+            android:layout_marginTop="32dp"
             android:layout_width="match_parent"
-            android:layout_height="30dp"/>
-</androidx.appcompat.widget.LinearLayoutCompat>
+            android:layout_height="wrap_content"/>
+
+</LinearLayout>

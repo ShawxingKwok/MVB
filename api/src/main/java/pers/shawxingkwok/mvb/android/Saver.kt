@@ -20,7 +20,6 @@ internal class Saver(
         dest.writeValue(true)
         val v: Any? = if (convert != null) convert!!(value) else value
         dest.writeValue(v)
-        MLog.d("Write $v in parcel.")
     }
 
     companion object CREATOR : Parcelable.Creator<Saver> {
@@ -40,7 +39,7 @@ internal class Saver(
                     .updateIf({ arrayClass != null }){
                         Arrays.copyOf(it as Array<*>, it.size, arrayClass!!)
                     }
-                    .updateIf({ recover != null }, recover!!)
+                    .updateIf({ recover != null }){ recover!!(it) }
 
             return Saver(value)
         }

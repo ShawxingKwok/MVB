@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 @Suppress("NAME_SHADOWING")
 public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     isSynchronized: Boolean,
-    @PublishedApi internal var parcelableKClass: KClass<out Parcelable>?,
+    public var parcelableKClass: KClass<out Parcelable>?,
     @PublishedApi internal var savedType: KClass<C & Any>,
     thisRef: LSV,
     initialize: (() -> T)?,
@@ -75,7 +75,7 @@ internal val KClass<*>.parcelableKClass: KClass<out Parcelable>? get(){
 public inline fun <LSV, reified T> LSV.save(
     isSynchronized: Boolean = false,
     parcelableKClass: KClass<out Parcelable>? = null,
-    noinline initialize: (() -> T)?,
+    noinline initialize: (() -> T)? = null,
 )
 : SavableMVBData<LSV, T, T>
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
