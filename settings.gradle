@@ -19,5 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "MVB"
 include ':api'
 include ':demo'
-include ':myapplication'
-include ':composetest'
+include ':test'

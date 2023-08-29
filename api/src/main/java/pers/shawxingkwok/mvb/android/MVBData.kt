@@ -4,6 +4,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import pers.shawxingkwok.androidutil.KLog
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
@@ -21,7 +23,7 @@ public open class MVBData<LSV, T> internal constructor(
 )
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
-    internal val actionsOnDelegate = mutableListOf<(LSV, String, () -> T) -> Unit>()
+    internal val actionsOnDelegate = mutableListOf<(LSV, KProperty<*>, String, () -> T) -> Unit>()
 
     internal lateinit var key: String
         private set
@@ -61,9 +63,14 @@ public open class MVBData<LSV, T> internal constructor(
         fun initializeIfNotEver() {
             if (state.isInitialized) return
 
-            requireNotNull(initialize){
+            checkNotNull(initialize){
                 "At $propPath, the lambda 'initialize' is null, which means you should set " +
                 "the value before you get it."
+            }
+
+            check(thisRef.savedStateRegistry.isRestored){
+                "All mvb properties must be called after `super.onCreate(savedInstanceState)` " +
+                "in ${thisRef.javaClass.canonicalName}."
             }
 
             val saver = saver
@@ -129,7 +136,7 @@ public open class MVBData<LSV, T> internal constructor(
         }
         .also { delegate ->
             actionsOnDelegate.forEach {
-                it(thisRef, key){
+                it(thisRef, property, key){
                     delegate.getValue(thisRef, property)
                 }
             }

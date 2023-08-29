@@ -4,11 +4,13 @@ package pers.shawxingkwok.mvb.android
 
 import android.os.*
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.Serializable
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -49,7 +51,7 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
     }
 
     init {
-        actionsOnDelegate += { thisRef, key, _ ->
+        actionsOnDelegate += { thisRef, _, key, _ ->
             thisRef.savedStateRegistry.registerSavedStateProvider(key){
                 Bundle().also { it.putParcelable("", saver) }
             }
@@ -162,3 +164,42 @@ public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
         if (it.parcelableKClass == null)
             it.parcelableKClass = T::class.parcelableKClass
     }
+
+public inline fun <LSV, reified T> LSV.saveMutableLiveData(
+    isSynchronized: Boolean = false,
+    parcelableKClass: KClass<out Parcelable>? = null,
+    noinline initialize: (() -> T)? = null,
+)
+: SavableMVBData<LSV, MutableLiveData<T>, Any?>
+    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+=
+    save<LSV, MutableLiveData<T>>(
+        isSynchronized = isSynchronized,
+        parcelableKClass = parcelableKClass,
+        initialize = {
+            if (initialize == null)
+                MutableLiveData<T>()
+            else
+                MutableLiveData(initialize())
+        }
+    )
+    .transform(
+        convert = {
+            if (it.isInitialized)
+                EMPTY_MUTABLE_LIVE_DATA
+            else
+                it.value
+        },
+        recover = {
+            if (it === EMPTY_MUTABLE_LIVE_DATA)
+                MutableLiveData()
+            else
+                MutableLiveData(it as T)
+        }
+    )
+
+@PublishedApi
+@Suppress("ClassName")
+internal object EMPTY_MUTABLE_LIVE_DATA : Serializable {
+    private fun readResolve(): Any = EMPTY_MUTABLE_LIVE_DATA
+}

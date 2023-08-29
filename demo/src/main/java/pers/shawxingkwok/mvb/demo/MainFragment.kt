@@ -2,9 +2,11 @@ package pers.shawxingkwok.mvb.demo
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
@@ -15,44 +17,72 @@ import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.KRecyclerViewAdapter
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.fastLazy
+import pers.shawxingkwok.ktutil.updateIf
 import pers.shawxingkwok.mvb.android.*
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
-import pers.shawxingkwok.mvb.demo.databinding.ItemRecordBinding
+import pers.shawxingkwok.mvb.demo.databinding.ItemIntervalBinding
 import java.util.*
 import kotlin.concurrent.timer
 
 @SuppressLint("SetTextI18n")
 class MainFragment : Fragment(R.layout.fragment_main) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        KLog.d(lifecycle.currentState)
+    }
+
+    private val binding by binding(FragmentMainBinding::bind)
+
     //region colors
     private val whiteGrey by fastLazy { getColor(resources, R.color.white_grey, null) }
-    private val lightGrey by fastLazy { getColor(resources, R.color.light_grey, null) }
-    private val darkGrey by fastLazy { getColor(resources, R.color.dark_grey, null) }
     private val lightRed by fastLazy { getColor(resources, R.color.light_red, null) }
-    private val darkRed by fastLazy { getColor(resources, R.color.dark_red, null) }
     private val lightGreen by fastLazy { getColor(resources, R.color.light_green, null) }
-    private val darkGreen by fastLazy { getColor(resources, R.color.dark_green, null) }
     private val white by fastLazy { getColor(resources, R.color.white, null) }
     //endregion
-    private val binding by binding(FragmentMainBinding::bind)
-    private val adapter = object : KRecyclerViewAdapter(){
-        var records = longArrayOf()
 
-        override fun registerProcessRequiredHolderCreators() {}
+    private fun formatDuration(duration: Long): String{
+        val percentSec = duration % 100
+        var sec = duration / 100
+        val min = sec / 60
+        sec %= 60
+
+        // The situation of an hour more is not considered.
+        val (minText, secText, percentSecondText) =
+            listOf(min, sec, percentSec)
+            .map { i -> if (i < 10) "0$i" else "$i" }
+
+        return "$minText:$secText.$percentSecondText"
+    }
+
+    private val adapter = object : KRecyclerViewAdapter(){
+        var intervals = longArrayOf()
 
         override fun arrangeHolderBinders() {
-            // also sort to determine colors
-            records.reversed().forEachIndexed { i, l ->
-                val id = records.size - i
+            val comparedIntervals = intervals.dropLast(1)
+            val max = comparedIntervals.maxOrNull()
+            val min = comparedIntervals.minOrNull()
+
+            intervals.reversed().forEachIndexed { i, l ->
+                val id = intervals.size - i
+
+                val textColor =
+                    when{
+                        i == 0 || intervals.size <= 2 -> white
+                        l == max -> lightRed
+                        l == min -> lightGreen
+                        else -> white
+                    }
+
                 HolderBinder(
-                    inflate = ItemRecordBinding::inflate,
+                    inflate = ItemIntervalBinding::inflate,
                     id = id,
-                    contentId = l
+                    contentId = l to textColor
                 ){
                     it.binding.id.text = "Lap $id"
-                    it.binding.id.setTextColor(white)
-                    // TODO
-                    it.binding.interval.text = "$l"
-                    it.binding.interval.setTextColor(white)
+                    it.binding.interval.text = formatDuration(l)
+
+                    it.binding.id.setTextColor(textColor)
+                    it.binding.interval.setTextColor(textColor)
                 }
             }
         }
@@ -62,28 +92,25 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         super.onViewCreated(view, savedInstanceState)
         binding.rv.adapter = adapter
         binding.rv.layoutManager = LinearLayoutManager(requireContext())
-        setListeners()
+        setFixedListeners()
     }
 
     //region data bridge
     private var duration by saveMutableStateFlow { 0L }
         .observe {
-            val decupleMilli = it % 100
-            var sec = it / 100
-            val min = sec / 60
-            sec %= 60
-            // The situation of an hour more is not considered.
-            binding.tvDuration.text =
-                listOf(min, sec, decupleMilli)
-                .map { i -> if (i < 10) "0$i" else "$i" }
-                .let { (min, sec, decupleMilli) -> "$min:$sec.$decupleMilli" }
+            binding.tvDuration.text = formatDuration(it)
         }
 
-    private val records by saveMutableStateFlow{ longArrayOf() }
-        .observe {
-            adapter.records = it
-            adapter.update{
-                binding.rv.scrollToPosition(0)
+    private val intervals by saveMutableStateFlow{ longArrayOf() }
+        .observe { intervals ->
+            val sizeChanged = intervals.size != adapter.intervals.size
+            adapter.intervals = intervals
+            adapter.update(sizeChanged)
+            if (sizeChanged) {
+                val layoutManager = binding.rv.layoutManager as LinearLayoutManager
+                val topVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+                    .updateIf({ it == -1 }){ 0 }
+                binding.rv.scrollToPosition(topVisiblePosition)
             }
         }
 
@@ -91,23 +118,23 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private val isRunning by rmb { MutableStateFlow(false) }
         .observe {
+            val tv = binding.tvRight
+
             if (it) {
                 timer = timer(period = 10){
                     duration.value++
 
-                    records.update { arr ->
-                        val newArr = if (arr.none()) longArrayOf(0) else arr.copyOf()
+                    intervals.update { arr ->
+                        val newArr = if (arr.none()) longArrayOf(0) else arr.clone()
                         newArr[newArr.lastIndex]++
                         newArr
                     }
                 }
-                val tv = binding.tvRight
                 tv.text = "Stop"
                 tv.setBackgroundResource(R.drawable.circle_dark_red)
                 tv.setTextColor(lightRed)
             } else {
                 timer?.cancel()
-                val tv = binding.tvRight
                 tv.text = "Start"
                 tv.setBackgroundResource(R.drawable.circle_dark_green)
                 tv.setTextColor(lightGreen)
@@ -133,7 +160,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     tv.setTextColor(white)
                     tv.isClickable = true
                     tv.onClick {
-                        records.update { it + 0 }
+                        intervals.update { it + 0 }
                     }
                 }
                 // reset
@@ -143,15 +170,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     tv.setTextColor(white)
                     tv.isClickable = true
                     tv.onClick {
-                        this.duration.value = 0
-                        this.records.value = longArrayOf()
+                        this@MainFragment.duration.value = 0
+                        this@MainFragment.intervals.value = longArrayOf()
                     }
                 }
             }
         }
     //endregion
 
-    private fun setListeners(){
+    private fun setFixedListeners(){
         binding.tvRight.onClick {
             isRunning.update { !it }
         }

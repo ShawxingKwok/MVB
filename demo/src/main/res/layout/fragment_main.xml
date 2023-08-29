@@ -5,13 +5,11 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:paddingTop="120dp"
-              android:background="@color/black"
               tools:context=".MainActivity">
 
     <TextView
             android:id="@+id/tv_duration"
             android:gravity="center"
-            android:textColor="@color/white"
             android:textSize="100sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -24,7 +22,6 @@
         <TextView
                 android:id="@+id/tv_left"
                 android:layout_marginStart="32dp"
-                android:textColor="@color/white"
                 android:textAllCaps="false"
                 android:background="@drawable/circle_dark_grey"
                 android:text="Lap"
@@ -49,9 +46,13 @@
                 android:layout_height="60dp"/>
     </LinearLayout>
 
+    <View android:background="@color/dark_grey"
+          android:layout_marginTop="32dp"
+          android:layout_width="match_parent"
+          android:layout_height="1dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv"
-            android:layout_marginTop="32dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
