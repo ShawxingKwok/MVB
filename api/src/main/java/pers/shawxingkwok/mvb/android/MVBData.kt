@@ -4,9 +4,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import pers.shawxingkwok.androidutil.KLog
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
@@ -87,13 +84,12 @@ public open class MVBData<LSV, T> internal constructor(
                         initialize.invoke().also { vm.setValue(key, it) }
             }
             state.isInitialized = true
-            MLog.d("$propPath is initialized.")
         }
 
         return object : ReadWriteProperty<LSV, T>{
             val getValue = {
-                if (saver != null) saver!!.value.also { MLog.d(it) }
-                else t.also { MLog.d(it) }
+                if (saver != null) saver!!.value
+                else t
             }
 
             override fun getValue(thisRef: LSV, property: KProperty<*>): T =
