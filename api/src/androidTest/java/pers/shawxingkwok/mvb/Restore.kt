@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragment
-import androidx.lifecycle.MutableLiveData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
@@ -42,7 +41,6 @@ internal class Restore {
                 sharedFlow.tryEmit(listOf(arrayOf(P(2))))
             }else {
                 assert(stateFlow.value == 1)
-                KLog.d(sharedFlow.replayCache.first().first())
                 assert(sharedFlow.replayCache.first().first().first().i == 1)
                 assert(liveData.value == 1)
             }

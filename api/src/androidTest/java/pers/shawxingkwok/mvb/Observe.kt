@@ -1,23 +1,15 @@
 package pers.shawxingkwok.mvb
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragment
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.flowOf
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import pers.shawxingkwok.androidutil.KLog
-import pers.shawxingkwok.ktutil.updateIf
 import pers.shawxingkwok.mvb.android.*
-import kotlin.reflect.KProperty
 
 private var i = 0
 

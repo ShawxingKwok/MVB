@@ -1,15 +1,8 @@
 package pers.shawxingkwok.mvb.demo
 
-import android.os.*
-import android.util.SparseArray
-import androidx.annotation.RequiresApi
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.parcelize.Parcelize
-import pers.shawxingkwok.androidutil.KLog
-import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.demo.databinding.ActivityMainBinding
-import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 
 // arrayOf<Parcelable> -> Array<Msg> : (toList as List<Msg>).toTypedArray()
 
