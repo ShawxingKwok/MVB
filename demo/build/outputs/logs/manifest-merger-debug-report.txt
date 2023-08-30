@@ -4,7 +4,7 @@ ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-MERGED from [:api] /Users/william/IdeaProjects/library/MVB/api/build/intermediates/merged_manifest/debug/AndroidManifest.xml:2:1-7:12
+MERGED from [io.github.shawxingkwok:mvb-android:1.0.0-SNAPSHOT] /Users/william/.gradle/caches/transforms-3/7eae7394bdd5a71c89662a71f64c7f25/transformed/mvb-android-1.0.0-SNAPSHOT/AndroidManifest.xml:2:1-7:12
 MERGED from [io.github.shawxingkwok:android-util-view:1.0.6] /Users/william/.gradle/caches/transforms-3/baea35d2fcea63ac7aa0ef8dd2e2fc82/transformed/android-util-view-1.0.6/AndroidManifest.xml:2:1-7:12
 MERGED from [com.github.DylanCaiCoding.ViewBindingKTX:viewbinding-nonreflection-ktx:2.1.0] /Users/william/.gradle/caches/transforms-3/cd8d1b9b915f3e934db4bb1c1168b536/transformed/viewbinding-nonreflection-ktx-2.1.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.databinding:databinding-adapters:4.2.1] /Users/william/.gradle/caches/transforms-3/944ae402da280db6c54d5674d9eee69b/transformed/databinding-adapters-4.2.1/AndroidManifest.xml:17:1-22:12
@@ -133,8 +133,8 @@ uses-sdk
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
-MERGED from [:api] /Users/william/IdeaProjects/library/MVB/api/build/intermediates/merged_manifest/debug/AndroidManifest.xml:5:5-44
-MERGED from [:api] /Users/william/IdeaProjects/library/MVB/api/build/intermediates/merged_manifest/debug/AndroidManifest.xml:5:5-44
+MERGED from [io.github.shawxingkwok:mvb-android:1.0.0-SNAPSHOT] /Users/william/.gradle/caches/transforms-3/7eae7394bdd5a71c89662a71f64c7f25/transformed/mvb-android-1.0.0-SNAPSHOT/AndroidManifest.xml:5:5-44
+MERGED from [io.github.shawxingkwok:mvb-android:1.0.0-SNAPSHOT] /Users/william/.gradle/caches/transforms-3/7eae7394bdd5a71c89662a71f64c7f25/transformed/mvb-android-1.0.0-SNAPSHOT/AndroidManifest.xml:5:5-44
 MERGED from [io.github.shawxingkwok:android-util-view:1.0.6] /Users/william/.gradle/caches/transforms-3/baea35d2fcea63ac7aa0ef8dd2e2fc82/transformed/android-util-view-1.0.6/AndroidManifest.xml:5:5-44
 MERGED from [io.github.shawxingkwok:android-util-view:1.0.6] /Users/william/.gradle/caches/transforms-3/baea35d2fcea63ac7aa0ef8dd2e2fc82/transformed/android-util-view-1.0.6/AndroidManifest.xml:5:5-44
 MERGED from [com.github.DylanCaiCoding.ViewBindingKTX:viewbinding-nonreflection-ktx:2.1.0] /Users/william/.gradle/caches/transforms-3/cd8d1b9b915f3e934db4bb1c1168b536/transformed/viewbinding-nonreflection-ktx-2.1.0/AndroidManifest.xml:5:5-44

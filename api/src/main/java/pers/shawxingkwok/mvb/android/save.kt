@@ -3,6 +3,7 @@
 package pers.shawxingkwok.mvb.android
 
 import android.os.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelStoreOwner
@@ -16,13 +17,12 @@ import kotlin.reflect.KClass
 
 @Suppress("NAME_SHADOWING")
 public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
-    isSynchronized: Boolean,
     public var parcelableKClass: KClass<out Parcelable>?,
     @PublishedApi internal var savedType: KClass<C & Any>,
     thisRef: LSV,
     initialize: (() -> T)?,
 )
-: MVBData<LSV, T>(isSynchronized, thisRef, initialize)
+: MVBData<LSV, T>(thisRef, initialize)
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 {
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
@@ -75,7 +75,6 @@ internal val KClass<*>.parcelableKClass: KClass<out Parcelable>? get(){
 }
 
 public inline fun <LSV, reified T> LSV.save(
-    isSynchronized: Boolean = false,
     parcelableKClass: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
@@ -83,7 +82,6 @@ public inline fun <LSV, reified T> LSV.save(
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     SavableMVBData(
-        isSynchronized = isSynchronized,
         parcelableKClass = parcelableKClass.also { require(it?.isParcelableType ?: true) },
         savedType = T::class as KClass<T & Any>,
         thisRef = this,
@@ -112,7 +110,6 @@ public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.transform(
     }
 
 public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
-    isSynchronized: Boolean = false,
     parcelableKClass: KClass<out Parcelable>? = null,
     noinline initialize: () -> T,
 )
@@ -120,7 +117,6 @@ public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     save<LSV, MutableStateFlow<T>>(
-        isSynchronized = isSynchronized,
         parcelableKClass = parcelableKClass,
         initialize = { MutableStateFlow(initialize()) }
     )
@@ -130,7 +126,6 @@ public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
     )
 
 public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
-    isSynchronized: Boolean = false,
     parcelableKClass: KClass<out Parcelable>? = null,
     replay: Int = 0,
     extraBufferCapacity: Int = 0,
@@ -140,7 +135,6 @@ public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     save<LSV, MutableSharedFlow<T>>(
-        isSynchronized = isSynchronized,
         parcelableKClass = parcelableKClass,
         initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) }
     )
@@ -166,7 +160,6 @@ public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
     }
 
 public inline fun <LSV, reified T> LSV.saveMutableLiveData(
-    isSynchronized: Boolean = false,
     parcelableKClass: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
@@ -174,7 +167,6 @@ public inline fun <LSV, reified T> LSV.saveMutableLiveData(
     where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
 =
     save<LSV, MutableLiveData<T>>(
-        isSynchronized = isSynchronized,
         parcelableKClass = parcelableKClass,
         initialize = {
             if (initialize == null)

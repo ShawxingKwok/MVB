@@ -3,10 +3,5 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.google.samples.apps.sunflower">
     <application>
-        <activity
-                android:name="pers.shawxingkwok.mvb.TestActivity"
-                android:exported="false"
-                android:label="Test"
-                android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"/>
     </application>
 </manifest>

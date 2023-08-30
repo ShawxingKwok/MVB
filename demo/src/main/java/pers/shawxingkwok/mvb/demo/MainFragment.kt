@@ -8,6 +8,7 @@ import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
 import kotlinx.coroutines.delay
@@ -26,11 +27,6 @@ import kotlin.concurrent.timer
 
 @SuppressLint("SetTextI18n")
 class MainFragment : Fragment(R.layout.fragment_main) {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        KLog.d(lifecycle.currentState)
-    }
-
     private val binding by binding(FragmentMainBinding::bind)
 
     //region colors

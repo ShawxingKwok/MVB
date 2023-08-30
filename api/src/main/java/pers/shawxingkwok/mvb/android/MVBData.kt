@@ -8,13 +8,8 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 
-private open class State{
-    open var isInitialized: Boolean = false
-}
-
 @Suppress("UNCHECKED_CAST")
 public open class MVBData<LSV, T> internal constructor(
-    private val isSynchronized: Boolean,
     private val thisRef: LSV,
     private val initialize: (() -> T)? = null
 )
@@ -26,6 +21,9 @@ public open class MVBData<LSV, T> internal constructor(
         private set
 
     internal open val saver: Saver? = null
+
+    @Volatile
+    private var isInitialized: Boolean = false
 
     public operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
         val isMutable = property is KMutableProperty<*>
@@ -40,15 +38,6 @@ public open class MVBData<LSV, T> internal constructor(
 
         key = MVBData::class.qualifiedName + "#" + propPath
 
-        val state =
-            if (isMutable || !isSynchronized)
-                State()
-            else
-                object : State(){
-                    @Volatile
-                    override var isInitialized: Boolean = false
-                }
-
         val vm by lazy(thisRef.savedStateRegistry) {
             try {
                 ViewModelProvider(thisRef)[MVBViewModel::class.java]
@@ -57,77 +46,55 @@ public open class MVBData<LSV, T> internal constructor(
             }
         }
 
-        fun initializeIfNotEver() {
-            if (state.isInitialized) return
-
-            checkNotNull(initialize){
-                "At $propPath, the lambda 'initialize' is null, which means you should set " +
-                "the value before you get it."
-            }
-
-            check(thisRef.savedStateRegistry.isRestored){
-                "All mvb properties must be called after `super.onCreate(savedInstanceState)` " +
-                "in ${thisRef.javaClass.canonicalName}."
-            }
-
-            val saver = saver
-            if (saver != null) {
-                if (saver.value == UNINITIALIZED)
-                    saver.value = initialize.invoke()
-            }else {
-                val v = vm.getValue(key)
-
-                t =
-                    if (v !== UNINITIALIZED) {
-                        v as T
-                    } else
-                        initialize.invoke().also { vm.setValue(key, it) }
-            }
-            state.isInitialized = true
-        }
-
         return object : ReadWriteProperty<LSV, T>{
-            val getValue = {
-                if (saver != null) saver!!.value
-                else t
-            }
+            override fun getValue(thisRef: LSV, property: KProperty<*>): T {
+                if (!isInitialized)
+                    synchronized(this){
+                        if (isInitialized) return@synchronized
 
-            override fun getValue(thisRef: LSV, property: KProperty<*>): T =
-                when{
-                    isSynchronized && isMutable ->
-                        synchronized(this){
-                            initializeIfNotEver()
-                            getValue()
+                        checkNotNull(initialize){
+                            "At $propPath, the lambda 'initialize' is null, which means you should set " +
+                                    "the value before you get it."
                         }
-                    isSynchronized -> {
-                        if (!state.isInitialized)
-                            synchronized(this, ::initializeIfNotEver)
 
-                        getValue()
+                        check(thisRef.savedStateRegistry.isRestored){
+                            "All mvb properties must be called after `super.onCreate(savedInstanceState)` " +
+                                    "in ${thisRef.javaClass.canonicalName}."
+                        }
+
+                        val saver = saver
+                        when{
+                            saver == null -> {
+                                val v = vm.getValue(key)
+
+                                t =
+                                    if (v !== UNINITIALIZED) {
+                                        v as T
+                                    } else
+                                        initialize.invoke().also { vm.setValue(key, it) }
+                            }
+
+                            saver.value == UNINITIALIZED -> saver.value = initialize.invoke()
+                        }
+
+                        isInitialized = true
                     }
-                    else -> {
-                        initializeIfNotEver()
-                        getValue()
-                    }
-                } as T
+
+                if (saver != null)
+                    return saver!!.value as T
+                else
+                    return t as T
+            }
 
             override fun setValue(thisRef: LSV, property: KProperty<*>, value: T) {
-                //todo: consider moving
-                fun setValue(){
-                    t = value
+                isInitialized = true
 
-                    if (saver != null)
-                        saver!!.value = value
-                    else
-                        vm.setValue(key, value)
+                t = value
 
-                    state.isInitialized = true
-                }
-
-                if (isSynchronized)
-                    synchronized(this, ::setValue)
+                if (saver != null)
+                    saver!!.value = value
                 else
-                    setValue()
+                    vm.setValue(key, value)
             }
         }
         .also { delegate ->

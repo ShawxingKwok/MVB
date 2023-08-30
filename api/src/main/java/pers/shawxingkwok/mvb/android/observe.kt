@@ -45,12 +45,12 @@ private fun <T> LifecycleOwner.observeLiveData(
 ) {
     lifecycle.addObserver(object : DefaultLifecycleObserver {
         override fun onCreate(owner: LifecycleOwner) {
-            if (owner !is Fragment)
-                getLiveData().observe(owner, act)
-            else
-                owner.viewLifecycleOwnerLiveData.observe(owner){
-                    getLiveData().observe(owner.viewLifecycleOwner, act)
-                }
+            // if (owner !is Fragment)
+            getLiveData().observe(owner, act)
+            // else
+            //     owner.viewLifecycleOwnerLiveData.observe(owner){
+            //         getLiveData().observe(owner.viewLifecycleOwner, act)
+            //     }
         }
     })
 }
