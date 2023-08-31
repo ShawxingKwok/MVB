@@ -70,10 +70,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     inflate = ItemIntervalBinding::inflate,
                     id = id,
                     contentId = l to textColor
-                ){
+                ) {
                     it.binding.id.text = "Lap $id"
                     it.binding.interval.text = formatDuration(l)
-
                     it.binding.id.setTextColor(textColor)
                     it.binding.interval.setTextColor(textColor)
                 }
