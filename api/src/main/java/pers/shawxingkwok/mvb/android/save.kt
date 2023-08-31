@@ -3,7 +3,6 @@
 package pers.shawxingkwok.mvb.android
 
 import android.os.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelStoreOwner
@@ -16,14 +15,14 @@ import java.util.*
 import kotlin.reflect.KClass
 
 @Suppress("NAME_SHADOWING")
-public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
-    public var parcelableKClass: KClass<out Parcelable>?,
+public class SavableMVBData<LVS, T, C> @PublishedApi internal constructor(
+    public var parcelableComponent: KClass<out Parcelable>?,
     @PublishedApi internal var savedType: KClass<C & Any>,
-    thisRef: LSV,
+    thisRef: LVS,
     initialize: (() -> T)?,
 )
-: MVBData<LSV, T>(thisRef, initialize)
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: MVBData<LVS, T>(thisRef, initialize)
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 {
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
     @PublishedApi internal var recover: ((Any?) -> Any?)? = null
@@ -32,7 +31,7 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
         val bundle = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
 
         if (bundle != null) {
-            Saver.parcelableLoader = (parcelableKClass ?: savedType.parcelableKClass)?.java?.classLoader
+            Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
             Saver.arrayClass = savedType.java.takeIf { it.isArray } as Class<Array<*>>?
             Saver.recover = recover
 
@@ -63,7 +62,7 @@ public class SavableMVBData<LSV, T, C> @PublishedApi internal constructor(
 internal val KClass<*>.isParcelableType: Boolean get() = Parcelable::class.java.isAssignableFrom(this.java)
 
 @PublishedApi
-internal val KClass<*>.parcelableKClass: KClass<out Parcelable>? get(){
+internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get(){
     if (Parcelable::class.java.isAssignableFrom(this.java))
         return this as KClass<out Parcelable>
 
@@ -74,28 +73,28 @@ internal val KClass<*>.parcelableKClass: KClass<out Parcelable>? get(){
     return null
 }
 
-public inline fun <LSV, reified T> LSV.save(
-    parcelableKClass: KClass<out Parcelable>? = null,
+public inline fun <LVS, reified T> LVS.save(
+    parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
-: SavableMVBData<LSV, T, T>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: SavableMVBData<LVS, T, T>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
     SavableMVBData(
-        parcelableKClass = parcelableKClass.also { require(it?.isParcelableType ?: true) },
+        parcelableComponent = parcelableComponent.also { require(it?.isParcelableType ?: true) },
         savedType = T::class as KClass<T & Any>,
         thisRef = this,
         initialize = initialize
     )
 
-public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.transform(
+public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
     noinline convert: (C) -> D,
     noinline recover: (D) -> C,
 )
-: SavableMVBData<LSV, T, D>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: SavableMVBData<LVS, T, D>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
-    (this as SavableMVBData<LSV, T, D>).also {
+    (this as SavableMVBData<LVS, T, D>).also {
         it.savedType = D::class as KClass<D & Any>
 
         it.convert = when (val oldConvert = it.convert) {
@@ -109,15 +108,15 @@ public inline fun <LSV, T, C, reified D> SavableMVBData<LSV, T, C>.transform(
         }
     }
 
-public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
-    parcelableKClass: KClass<out Parcelable>? = null,
+public inline fun <LVS, reified T> LVS.saveMutableStateFlow(
+    parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: () -> T,
 )
-: SavableMVBData<LSV, MutableStateFlow<T>, T>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: SavableMVBData<LVS, MutableStateFlow<T>, T>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
-    save<LSV, MutableStateFlow<T>>(
-        parcelableKClass = parcelableKClass,
+    save<LVS, MutableStateFlow<T>>(
+        parcelableComponent = parcelableComponent,
         initialize = { MutableStateFlow(initialize()) }
     )
     .transform(
@@ -125,20 +124,20 @@ public inline fun <LSV, reified T> LSV.saveMutableStateFlow(
         recover = ::MutableStateFlow
     )
 
-public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
-    parcelableKClass: KClass<out Parcelable>? = null,
+public inline fun <LVS, reified T> LVS.saveMutableSharedFlow(
+    parcelableComponent: KClass<out Parcelable>? = null,
     replay: Int = 0,
     extraBufferCapacity: Int = 0,
     onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
 )
-: SavableMVBData<LSV, MutableSharedFlow<T>, List<T>>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: SavableMVBData<LVS, MutableSharedFlow<T>, List<T>>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
-    save<LSV, MutableSharedFlow<T>>(
-        parcelableKClass = parcelableKClass,
+    save<LVS, MutableSharedFlow<T>>(
+        parcelableComponent = parcelableComponent,
         initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) }
     )
-    .transform<LSV, MutableSharedFlow<T>, MutableSharedFlow<T>, List<T>>(
+    .transform<LVS, MutableSharedFlow<T>, MutableSharedFlow<T>, List<T>>(
         convert = { it.replayCache },
         recover = { cache ->
             val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
@@ -155,19 +154,19 @@ public inline fun <LSV, reified T> LSV.saveMutableSharedFlow(
         }
     )
     .also {
-        if (it.parcelableKClass == null)
-            it.parcelableKClass = T::class.parcelableKClass
+        if (it.parcelableComponent == null)
+            it.parcelableComponent = T::class.parcelableComponent
     }
 
-public inline fun <LSV, reified T> LSV.saveMutableLiveData(
-    parcelableKClass: KClass<out Parcelable>? = null,
+public inline fun <LVS, reified T> LVS.saveMutableLiveData(
+    parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
-: SavableMVBData<LSV, MutableLiveData<T>, Any?>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+: SavableMVBData<LVS, MutableLiveData<T>, Any?>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
-    save<LSV, MutableLiveData<T>>(
-        parcelableKClass = parcelableKClass,
+    save<LVS, MutableLiveData<T>>(
+        parcelableComponent = parcelableComponent,
         initialize = {
             if (initialize == null)
                 MutableLiveData<T>()
@@ -177,7 +176,7 @@ public inline fun <LSV, reified T> LSV.saveMutableLiveData(
     )
     .transform(
         convert = {
-            if (it.isInitialized)
+            if (!it.isInitialized)
                 EMPTY_MUTABLE_LIVE_DATA
             else
                 it.value

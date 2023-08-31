@@ -47,7 +47,6 @@ dependencies {
     implementation 'com.github.DylanCaiCoding.ViewBindingKTX:viewbinding-nonreflection-ktx:2.1.0'
     implementation "androidx.activity:activity-ktx:1.7.2"
     implementation "androidx.fragment:fragment-ktx:1.6.1"
-    implementation('io.github.shawxingkwok:mvb-android:1.0.0-SNAPSHOT')
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation libs.kotlin.reflect
@@ -63,6 +62,6 @@ tasks.withType(KotlinCompile).configureEach{
 
 dependencies {
     implementation(libs.bundles.shawxing)
-//    implementation project(":api") // 'io.github.shawxingkwok:mvb.android:1.0.0'
+    implementation project(":api") // 'io.github.shawxingkwok:mvb.android:1.0.0'
 }
 //endregion

@@ -1,10 +1,10 @@
 package pers.shawxingkwok.mvb.android
 
-import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 
-public fun <LSV, T> LSV.rmb(initialize: (() -> T)? = null): MVBData<LSV, T>
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+public fun <LVS, T> LVS.rmb(initialize: (() -> T)? = null): MVBData<LVS, T>
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
     MVBData(this, initialize)

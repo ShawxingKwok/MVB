@@ -10,7 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/api" />
             <option value="$PROJECT_DIR$/demo" />
-            <option value="$PROJECT_DIR$/test" />
+            <option value="$PROJECT_DIR$/restoretest" />
           </set>
         </option>
       </GradleProjectSettings>

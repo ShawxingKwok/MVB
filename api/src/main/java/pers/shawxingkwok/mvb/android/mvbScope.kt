@@ -7,6 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
 import kotlinx.coroutines.CoroutineScope
 
-public val <LSV> LSV.mvbScope: CoroutineScope
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+public val <LVS> LVS.mvbScope: CoroutineScope
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
     get() = ViewModelProvider(this)[MVBViewModel::class.java].viewModelScope

@@ -4,18 +4,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import java.lang.NullPointerException
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
-public open class MVBData<LSV, T> internal constructor(
-    private val thisRef: LSV,
+public open class MVBData<LVS, T> internal constructor(
+    private val thisRef: LVS,
     private val initialize: (() -> T)? = null
 )
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 {
-    internal val actionsOnDelegate = mutableListOf<(LSV, KProperty<*>, String, () -> T) -> Unit>()
+    internal val actionsOnDelegate = mutableListOf<(LVS, KProperty<*>, String, () -> T) -> Unit>()
 
     internal lateinit var key: String
         private set
@@ -25,7 +26,7 @@ public open class MVBData<LSV, T> internal constructor(
     @Volatile
     private var isInitialized: Boolean = false
 
-    public operator fun provideDelegate(thisRef: LSV, property: KProperty<*>) : ReadWriteProperty<LSV, T>{
+    public operator fun provideDelegate(thisRef: LVS, property: KProperty<*>) : ReadWriteProperty<LVS, T>{
         val isMutable = property is KMutableProperty<*>
 
         val propPath = thisRef.javaClass.canonicalName!! + "." + property.name
@@ -46,16 +47,11 @@ public open class MVBData<LSV, T> internal constructor(
             }
         }
 
-        return object : ReadWriteProperty<LSV, T>{
-            override fun getValue(thisRef: LSV, property: KProperty<*>): T {
+        return object : ReadWriteProperty<LVS, T>{
+            override fun getValue(thisRef: LVS, property: KProperty<*>): T {
                 if (!isInitialized)
                     synchronized(this){
                         if (isInitialized) return@synchronized
-
-                        checkNotNull(initialize){
-                            "At $propPath, the lambda 'initialize' is null, which means you should set " +
-                                    "the value before you get it."
-                        }
 
                         check(thisRef.savedStateRegistry.isRestored){
                             "All mvb properties must be called after `super.onCreate(savedInstanceState)` " +
@@ -63,18 +59,26 @@ public open class MVBData<LSV, T> internal constructor(
                         }
 
                         val saver = saver
-                        when{
-                            saver == null -> {
-                                val v = vm.getValue(key)
+                        try {
+                            when{
+                                saver == null -> {
+                                    val v = vm.getValue(key)
 
-                                t =
-                                    if (v !== UNINITIALIZED) {
-                                        v as T
-                                    } else
-                                        initialize.invoke().also { vm.setValue(key, it) }
+                                    t =
+                                        if (v !== UNINITIALIZED) {
+                                            v as T
+                                        } else
+                                            initialize!!().also { vm.setValue(key, it) }
+                                }
+
+                                saver.value == UNINITIALIZED -> saver.value = initialize!!()
                             }
-
-                            saver.value == UNINITIALIZED -> saver.value = initialize.invoke()
+                        } catch (e: NullPointerException) {
+                            checkNotNull(initialize){
+                                "At $propPath, the lambda 'initialize' is null, which means you should set " +
+                                        "the value before you get it."
+                            }
+                            throw e
                         }
 
                         isInitialized = true
@@ -86,7 +90,7 @@ public open class MVBData<LSV, T> internal constructor(
                     return t as T
             }
 
-            override fun setValue(thisRef: LSV, property: KProperty<*>, value: T) {
+            override fun setValue(thisRef: LVS, property: KProperty<*>, value: T) {
                 isInitialized = true
 
                 t = value

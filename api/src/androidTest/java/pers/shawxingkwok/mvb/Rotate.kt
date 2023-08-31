@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package pers.shawxingkwok.mvb
 
 import android.content.pm.ActivityInfo
@@ -7,6 +9,7 @@ import androidx.fragment.app.testing.launchFragment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.mvb.android.rmb
 import pers.shawxingkwok.mvb.android.save
@@ -22,16 +25,20 @@ internal class Rotate {
     }
 
     internal class MyFragment : Fragment(){
-        var x by rmb { 1 }
-        var y by rmb { 1 }
+        val x by rmb { 1 }
+        var y by rmb{ 2 }
+        // or lateinit
+        var z by rmb<_, Int>()
 
-        var a by save { 1 }
-        var b by save { 1 }
+        val a by save { 1 }
+        var b by save { 2 }
+        // or lateinit
+        var c by save<_, Int>()
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
 
-            allDo(::x, ::y, ::a, ::b){
+            allDo(::y, ::z, ::b, ::c){
                 if (savedInstanceState == null){
                     it.set(2)
                     it.set(it.get() + 1)

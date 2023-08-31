@@ -10,7 +10,7 @@
     <TextView
             android:id="@+id/tv_duration"
             android:gravity="center"
-            android:textSize="100sp"
+            android:textSize="30sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

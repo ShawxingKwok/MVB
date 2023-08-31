@@ -23,8 +23,8 @@ private fun <T> LifecycleOwner.collectFlowOnStart(
     }
 }
 
-public fun <LSV, T, F: Flow<T>, M: MVBData<LSV, F>> M.observe(act: suspend CoroutineScope.(T) -> Unit): M
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(act: suspend CoroutineScope.(T) -> Unit): M
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
@@ -55,8 +55,8 @@ private fun <T> LifecycleOwner.observeLiveData(
     })
 }
 
-public fun <LSV, T, L: LiveData<T>, M: MVBData<LSV, L>> M.observe(act: (T) -> Unit): M
-    where LSV: LifecycleOwner, LSV: SavedStateRegistryOwner, LSV: ViewModelStoreOwner
+public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Unit): M
+    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
