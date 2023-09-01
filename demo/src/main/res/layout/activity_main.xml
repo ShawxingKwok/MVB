@@ -9,7 +9,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_main"
-        android:name="pers.shawxingkwok.mvb.demo.MainFragment"
+        android:name="pers.shawxingkwok.mvb.demo.StopwatchFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

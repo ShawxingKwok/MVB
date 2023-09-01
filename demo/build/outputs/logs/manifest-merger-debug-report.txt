@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
 MERGED from [:api] /Users/william/IdeaProjects/library/MVB/api/build/intermediates/merged_manifest/debug/AndroidManifest.xml:2:1-7:12
 MERGED from [io.github.shawxingkwok:android-util-view:1.0.6] /Users/william/.gradle/caches/transforms-3/0f7f7cc2bb28a6acc8488926de25ba09/transformed/android-util-view-1.0.6/AndroidManifest.xml:2:1-7:12
 MERGED from [com.github.DylanCaiCoding.ViewBindingKTX:viewbinding-nonreflection-ktx:2.1.0] /Users/william/.gradle/caches/transforms-3/02a67e62a08bdf8f64d717e294caf44c/transformed/viewbinding-nonreflection-ktx-2.1.0/AndroidManifest.xml:2:1-7:12
@@ -58,27 +58,27 @@ MERGED from [androidx.documentfile:documentfile:1.0.0] /Users/william/.gradle/ca
 MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /Users/william/.gradle/caches/transforms-3/bdeab692d53926b0acd074dd9b37e0e8/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.print:print:1.0.0] /Users/william/.gradle/caches/transforms-3/cf9fe7b6a8c5b1355adfb60116e8b0b5/transformed/print-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] /Users/william/.gradle/caches/transforms-3/860272b54472cf521c76854339ec9f5d/transformed/annotation-experimental-1.3.0/AndroidManifest.xml:17:1-22:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
-INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
+INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
 	package
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
 	android:versionName
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
 	xmlns:tools
 		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:3:11-57
 	android:versionCode
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-25:12
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:1-26:12
 		INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
 	xmlns:android
 		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:2:11-69
 application
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:5:5-23:19
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:5:5-24:19
 MERGED from [com.google.android.material:material:1.9.0] /Users/william/.gradle/caches/transforms-3/f3717062347402317d55bfc9f2813622/transformed/material-1.9.0/AndroidManifest.xml:24:5-20
 MERGED from [com.google.android.material:material:1.9.0] /Users/william/.gradle/caches/transforms-3/f3717062347402317d55bfc9f2813622/transformed/material-1.9.0/AndroidManifest.xml:24:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /Users/william/.gradle/caches/transforms-3/c893d593394819544a41c2f975f2ea97/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
@@ -98,37 +98,39 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/william/.gradle/cach
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.10.1] /Users/william/.gradle/caches/transforms-3/2febd6e75408053117674cd29f00612c/transformed/core-1.10.1/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:11:13-39
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:12:13-39
 	android:label
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:10:13-45
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:11:13-45
 	android:fullBackupContent
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:8:13-58
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:9:13-58
 	tools:targetApi
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:13:13-33
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:14:13-33
 	android:icon
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:9:13-47
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:10:13-47
 	android:allowBackup
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:6:13-39
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:7:13-39
 	android:theme
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:12:13-57
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:13:13-57
 	android:dataExtractionRules
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:7:13-69
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:8:13-69
+	android:name
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:6:13-32
 activity#pers.shawxingkwok.mvb.demo.MainActivity
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:14:9-22:20
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:15:9-23:20
 	android:exported
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:16:17-40
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:17:17-40
 	android:name
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:15:17-45
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:16:17-45
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:17:13-21:29
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:18:13-22:29
 action#android.intent.action.MAIN
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:18:17-68
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:19:17-68
 	android:name
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:18:25-66
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:19:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:20:17-76
+ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:21:17-76
 	android:name
-		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:20:27-74
+		ADDED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml:21:27-74
 uses-sdk
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/william/IdeaProjects/library/MVB/demo/src/main/AndroidManifest.xml
