@@ -1,25 +1,38 @@
-package pers.shawxingkwok.mvb.demo
+package pers.shawxingkwok.mvb.demo.orginalAdapter
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import pers.shawxingkwok.androidutil.view.onClick
-import pers.shawxingkwok.ktutil.updateIf
+import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.android.observe
 import pers.shawxingkwok.mvb.android.rmb
+import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.android.saveMutableStateFlow
+import pers.shawxingkwok.mvb.demo.R
+import pers.shawxingkwok.mvb.demo.StopwatchUtil
+import pers.shawxingkwok.mvb.demo.StopwatchUtil.lightGreen
+import pers.shawxingkwok.mvb.demo.StopwatchUtil.lightRed
+import pers.shawxingkwok.mvb.demo.StopwatchUtil.white
+import pers.shawxingkwok.mvb.demo.StopwatchUtil.whiteGrey
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 import java.util.*
 import kotlin.concurrent.timer
 
 @SuppressLint("SetTextI18n")
-class StopwatchFragment : Fragment(R.layout.fragment_main) {
+class OriginalFragment : Fragment(R.layout.fragment_main) {
     private val binding by binding(FragmentMainBinding::bind)
-    private val adapter = StopwatchAdapter()
+    private val intervals by save { mutableListOf<Int>() }
+    private val adapter by fastLazy { OrginalAdapter(intervals.asReversed()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -32,13 +45,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
     private var duration by saveMutableStateFlow { 0 }
         .observe {
             binding.tvDuration.text = StopwatchUtil.formatDuration(it)
-        }
-
-    private val intervals by saveMutableStateFlow { intArrayOf() }
-        .observe {
-            val sizeChanged = it.size != adapter.intervals.size
-            adapter.intervals = it
-            adapter.update(sizeChanged)
+            adapter.updateTop()
         }
 
     private var timer: Timer? = null
@@ -49,13 +56,6 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
             if (it)
                 timer = timer(period = 10) {
                     duration.value++
-
-                    if (intervals.value.none())
-                        intervals.value = intArrayOf(0)
-                    else
-                        intervals.value = intervals.value.clone()
-
-                    intervals.value[0]++
                 }
             else
                 timer?.cancel()
@@ -67,11 +67,11 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
             if (it) {
                 tv.text = "Stop"
                 tv.setBackgroundResource(R.drawable.circle_dark_red)
-                tv.setTextColor(StopwatchUtil.lightRed)
+                tv.setTextColor(lightRed)
             } else {
                 tv.text = "Start"
                 tv.setBackgroundResource(R.drawable.circle_dark_green)
-                tv.setTextColor(StopwatchUtil.lightGreen)
+                tv.setTextColor(lightGreen)
             }
         }
 
@@ -84,33 +84,28 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
                 duration == 0 -> {
                     tv.setBackgroundResource(R.drawable.circle_dark_grey)
                     tv.text = "Lap"
-                    tv.setTextColor(StopwatchUtil.whiteGrey)
+                    tv.setTextColor(whiteGrey)
                     tv.isClickable = false
                 }
                 // lap
                 isRunning -> {
                     tv.setBackgroundResource(R.drawable.circle_light_grey)
                     tv.text = "Lap"
-                    tv.setTextColor(StopwatchUtil.white)
+                    tv.setTextColor(white)
                     tv.isClickable = true
                     tv.onClick {
-                        intervals.update { intArrayOf(0) + it }
-
-                        val layoutManager = binding.rv.layoutManager as LinearLayoutManager
-                        val topVisiblePosition = layoutManager.findFirstVisibleItemPosition()
-                            .updateIf({ it == -1 }) { 0 }
-                        binding.rv.scrollToPosition(topVisiblePosition)
+                        adapter.insertAndScrollUp(binding.rv)
                     }
                 }
                 // reset
                 else ->{
                     tv.setBackgroundResource(R.drawable.circle_light_grey)
                     tv.text = "Reset"
-                    tv.setTextColor(StopwatchUtil.white)
+                    tv.setTextColor(white)
                     tv.isClickable = true
                     tv.onClick {
-                        this@StopwatchFragment.duration.value = 0
-                        intervals.value = intArrayOf()
+                        this@OriginalFragment.duration.value = 0
+                        adapter.reset()
                     }
                 }
             }
@@ -120,6 +115,16 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
     private fun setFixedListeners(){
         binding.tvRight.onClick {
             isRunning.update { !it }
+        }
+        lifecycleScope.launch {
+            delay(1000)
+            binding.tvRight.performClick()
+            delay(1000)
+
+            repeat(20){
+                delay((100..200).random().toLong())
+                binding.tvLeft.performClick()
+            }
         }
     }
 }
