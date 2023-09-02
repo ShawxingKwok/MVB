@@ -4,9 +4,15 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.updateIf
 import pers.shawxingkwok.mvb.android.observe
@@ -15,6 +21,8 @@ import pers.shawxingkwok.mvb.android.saveMutableStateFlow
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 import java.util.*
 import kotlin.concurrent.timer
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 @SuppressLint("SetTextI18n")
 class StopwatchFragment : Fragment(R.layout.fragment_main) {
@@ -28,8 +36,8 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
         setFixedListeners()
     }
 
-    //region data bridge
-    private var duration by saveMutableStateFlow { 0 }
+    //region bridge
+    private val duration by saveMutableStateFlow { 0 }
         .observe {
             binding.tvDuration.text = StopwatchUtil.formatDuration(it)
         }
@@ -43,24 +51,30 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
 
     private var timer: Timer? = null
 
+    // isRunning is not saved because it's best to be false when recovered
     private val isRunning by rmb { MutableStateFlow(false) }
-        // update duration and adapter periodically
+        // if true, update duration and adapter periodically
         .observe {
-            if (it)
-                timer = timer(period = 10) {
-                    duration.value++
-
-                    if (intervals.value.none())
-                        intervals.value = intArrayOf(0)
-                    else
-                        intervals.value = intervals.value.clone()
-
-                    intervals.value[0]++
+            when{
+                !it -> {
+                    timer?.cancel()
+                    timer = null
                 }
-            else
-                timer?.cancel()
+                timer == null ->
+                    timer = timer(period = 10) {
+                        duration.value++
+
+                        if (intervals.value.none())
+                            intervals.value = intArrayOf(0)
+                        else
+                            intervals.value = intervals.value.clone()
+
+                        intervals.value[0]++
+                    }
+                // else -> do nothing if recovered after onStop
+            }
         }
-        // update button stop/start
+        // switch button stop/start
         .observe {
             val tv = binding.tvRight
 
@@ -75,7 +89,10 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
             }
         }
 
+    // suppress because tvLeftState is hinted 'unused' though it's actually observed.
     @Suppress("unused")
+    // the OnClickListener of the left textview button is variable and set in `observe`,
+    // which also explains why there is a function `setFixedListeners` at last.
     private val tvLeftState by rmb { combine(duration, isRunning){ a, b -> a to b } }
         .observe { (duration, isRunning) ->
             val tv = binding.tvLeft
@@ -117,7 +134,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
         }
     //endregion
 
-    private fun setFixedListeners(){
+    private fun setFixedListeners() {
         binding.tvRight.onClick {
             isRunning.update { !it }
         }

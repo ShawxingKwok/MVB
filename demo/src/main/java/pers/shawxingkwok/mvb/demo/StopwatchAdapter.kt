@@ -1,10 +1,13 @@
 package pers.shawxingkwok.mvb.demo
 
+import android.annotation.SuppressLint
+import pers.shawxingkwok.androidutil.view.KRecyclerViewAdapter
 import pers.shawxingkwok.mvb.demo.databinding.ItemIntervalBinding
 
 class StopwatchAdapter : KRecyclerViewAdapter(){
     var intervals = intArrayOf()
 
+    @SuppressLint("SetTextI18n")
     override fun arrangeHolderBinders() {
         val (max, min) = intervals.drop(1).run { maxOrNull() to minOrNull() }
 
@@ -23,7 +26,7 @@ class StopwatchAdapter : KRecyclerViewAdapter(){
                 id = id,
                 contentId = interval to textColor,
             ){ holder, oldContentId ->
-                // init
+                // init fixed parts
                 if (oldContentId == null)
                     holder.binding.id.text = "Lap $id"
 

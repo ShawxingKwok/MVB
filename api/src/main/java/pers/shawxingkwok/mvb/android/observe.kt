@@ -23,6 +23,9 @@ private fun <T> LifecycleOwner.collectFlowOnStart(
     }
 }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
+ */
 public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(act: suspend CoroutineScope.(T) -> Unit): M
     where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
@@ -32,6 +35,9 @@ public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(act: suspend Corou
         }
     }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
+ */
 context (LifecycleOwner)
 public fun <T, F: Flow<T>> KProperty0<F>.observe(act: suspend CoroutineScope.(T) -> Unit): KProperty0<F> =
     apply{
@@ -55,6 +61,9 @@ private fun <T> LifecycleOwner.observeLiveData(
     })
 }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
+ */
 public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Unit): M
     where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
@@ -64,6 +73,9 @@ public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Un
         }
     }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
+ */
 context (LifecycleOwner)
 public fun <T, F: LiveData<T>> KProperty0<F>.observe(act: (T) -> Unit): KProperty0<F> =
     apply{

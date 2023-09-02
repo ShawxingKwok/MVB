@@ -44,8 +44,8 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
 
 shawxing-kt = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.2" }
-shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core",  version = "1.0.0" }
-shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view",  version = "1.0.6" }
+shawxing-androidUtilCore = { group = "io.github.shawxingkwok", name = "android-util-core", version = "1.0.0" }
+shawxing-androidUtilView = { group = "io.github.shawxingkwok", name = "android-util-view", version = "1.0.8" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }

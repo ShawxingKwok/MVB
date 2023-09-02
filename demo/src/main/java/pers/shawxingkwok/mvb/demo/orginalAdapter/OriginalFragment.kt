@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.android.observe
@@ -27,6 +28,8 @@ import pers.shawxingkwok.mvb.demo.StopwatchUtil.whiteGrey
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 import java.util.*
 import kotlin.concurrent.timer
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 @SuppressLint("SetTextI18n")
 class OriginalFragment : Fragment(R.layout.fragment_main) {
@@ -117,12 +120,10 @@ class OriginalFragment : Fragment(R.layout.fragment_main) {
             isRunning.update { !it }
         }
         lifecycleScope.launch {
-            delay(1000)
+            delay(300)
             binding.tvRight.performClick()
-            delay(1000)
-
-            repeat(20){
-                delay((100..200).random().toLong())
+            repeat(1000){
+                delay(150)
                 binding.tvLeft.performClick()
             }
         }

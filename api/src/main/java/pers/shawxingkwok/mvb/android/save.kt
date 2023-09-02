@@ -73,6 +73,9 @@ internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get(){
     return null
 }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ */
 public inline fun <LVS, reified T> LVS.save(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
@@ -87,6 +90,9 @@ public inline fun <LVS, reified T> LVS.save(
         initialize = initialize
     )
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ */
 public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
     noinline convert: (C) -> D,
     noinline recover: (D) -> C,
@@ -108,6 +114,9 @@ public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
         }
     }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ */
 public inline fun <LVS, reified T> LVS.saveMutableStateFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: () -> T,
@@ -124,6 +133,9 @@ public inline fun <LVS, reified T> LVS.saveMutableStateFlow(
         recover = ::MutableStateFlow
     )
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ */
 public inline fun <LVS, reified T> LVS.saveMutableSharedFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     replay: Int = 0,
@@ -158,6 +170,9 @@ public inline fun <LVS, reified T> LVS.saveMutableSharedFlow(
             it.parcelableComponent = T::class.parcelableComponent
     }
 
+/**
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ */
 public inline fun <LVS, reified T> LVS.saveMutableLiveData(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
