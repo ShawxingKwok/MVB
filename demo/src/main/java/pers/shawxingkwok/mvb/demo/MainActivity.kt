@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import pers.shawxingkwok.mvb.demo.databinding.ActivityMainBinding
 
-// arrayOf<Parcelable> -> Array<Msg> : (toList as List<Msg>).toTypedArray()
-
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
