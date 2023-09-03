@@ -11,18 +11,6 @@ import kotlin.reflect.KProperty0
 // Since lambdas on mvb properties won't take too many memories, here doesn't use inline to avoid
 // caring `@PublishedApi`.
 
-// flow
-private fun <T> LifecycleOwner.collectFlowOnStart(
-    getFlow: () -> Flow<T>,
-    act: suspend CoroutineScope.(T) -> Unit,
-){
-    lifecycleScope.launch {
-        repeatOnLifecycle(Lifecycle.State.STARTED){
-            getFlow().collect{ act(it) }
-        }
-    }
-}
-
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
  */
@@ -31,35 +19,13 @@ public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(act: suspend Corou
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
-            lifecycleOwner.collectFlowOnStart(getValue, act)
+            lifecycleOwner.lifecycleScope.launch {
+                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                    getValue().collect{ act(it) }
+                }
+            }
         }
     }
-
-/**
- * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
- */
-context (LifecycleOwner)
-public fun <T, F: Flow<T>> KProperty0<F>.observe(act: suspend CoroutineScope.(T) -> Unit): KProperty0<F> =
-    apply{
-        collectFlowOnStart(this::get, act)
-    }
-
-// liveData
-private fun <T> LifecycleOwner.observeLiveData(
-    getLiveData: () -> LiveData<T>,
-    act: (T) -> Unit,
-) {
-    lifecycle.addObserver(object : DefaultLifecycleObserver {
-        override fun onCreate(owner: LifecycleOwner) {
-            // if (owner !is Fragment)
-            getLiveData().observe(owner, act)
-            // else
-            //     owner.viewLifecycleOwnerLiveData.observe(owner){
-            //         getLiveData().observe(owner.viewLifecycleOwner, act)
-            //     }
-        }
-    })
-}
 
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
@@ -69,15 +35,6 @@ public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Un
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
-            lifecycleOwner.observeLiveData(getValue, act)
+            getValue().observe(lifecycleOwner, act)
         }
-    }
-
-/**
- * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
- */
-context (LifecycleOwner)
-public fun <T, F: LiveData<T>> KProperty0<F>.observe(act: (T) -> Unit): KProperty0<F> =
-    apply{
-        observeLiveData(this::get, act)
     }

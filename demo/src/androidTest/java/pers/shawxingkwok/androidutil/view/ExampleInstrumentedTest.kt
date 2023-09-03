@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
 import org.junit.Test
@@ -16,6 +17,7 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+    lateinit var viewHolder: ViewHolder
     @Test
     fun useAppContext() {
         // Context of the app under test.

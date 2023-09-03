@@ -91,8 +91,6 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
 
     // suppress because tvLeftState is hinted 'unused' though it's actually observed.
     @Suppress("unused")
-    // the OnClickListener of the left textview button is variable and set in `observe`,
-    // which also explains why there is a function `setFixedListeners` at last.
     private val tvLeftState by rmb { combine(duration, isRunning){ a, b -> a to b } }
         .observe { (duration, isRunning) ->
             val tv = binding.tvLeft
@@ -110,7 +108,9 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
                     tv.text = "Lap"
                     tv.setTextColor(StopwatchUtil.white)
                     tv.isClickable = true
-                    tv.onClick {
+                    // This OnClickListener is variable, which also explains why there is a
+                    // function `setFixedListeners` at last.
+                    tv.onClick { _ ->
                         intervals.update { intArrayOf(0) + it }
 
                         val layoutManager = binding.rv.layoutManager as LinearLayoutManager

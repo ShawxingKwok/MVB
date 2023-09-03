@@ -5,7 +5,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import pers.shawxingkwok.ktutil.updateIf
 import java.util.*
-import kotlin.reflect.KClass
 
 internal class Saver(
     var value: Any?,

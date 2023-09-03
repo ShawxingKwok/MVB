@@ -40,14 +40,9 @@ android {
 dependencies {
     implementation libs.androidx.coreKtx
     implementation libs.appcompat
-    implementation libs.material
     implementation(libs.bundles.shawxing)
     implementation libs.androidx.lifecycleRuntimeKtx
     implementation libs.lifecycle.viewmodel.ktx
-    implementation libs.constraintlayout
-
-//    implementation libs.navigation.fragment.ktx
-//    implementation libs.navigation.ui.ktx
 
     testImplementation libs.junit
     androidTestImplementation(libs.androidx.fragment.test)

@@ -3,6 +3,7 @@
 package pers.shawxingkwok.mvb
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import pers.shawxingkwok.mvb.android.*
 internal class Sample : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         mvbScope.launch {
 
         }
