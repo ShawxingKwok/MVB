@@ -1,33 +1,14 @@
 package pers.shawxingkwok.restoretest
 
-import android.app.Fragment
-import android.icu.util.GregorianCalendar
-import android.os.Build
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.SparseArray
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.parcelize.Parcelize
 import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.android.saveMutableLiveData
 import pers.shawxingkwok.mvb.android.saveMutableSharedFlow
 import pers.shawxingkwok.mvb.android.saveMutableStateFlow
-import pers.shawxingkwok.restoretest.ui.theme.MVBTheme
 import java.math.BigDecimal
-import java.time.LocalDate
-import java.util.Calendar
-import java.util.Timer
 
 class MainActivity : ComponentActivity() {
     private val sharedFlow by saveMutableSharedFlow<_, List<Array<P>>>(
@@ -45,7 +26,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null){
             stateFlow.value++

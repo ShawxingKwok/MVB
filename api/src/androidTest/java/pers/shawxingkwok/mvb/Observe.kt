@@ -38,9 +38,6 @@ internal class Observe {
         private val z by saveMutableSharedFlow<_, Int>(replay = 1).observe { act("z") }
         private val a by saveMutableLiveData { 1 }.observe { act("a") }
 
-        private val flow by ::_flow.observe { act("flow") }
-        private val livedata by ::_livedata.observe { act("livedata") }
-
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             z.tryEmit(1)

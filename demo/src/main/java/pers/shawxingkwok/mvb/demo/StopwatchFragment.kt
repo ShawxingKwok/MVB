@@ -4,15 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dylanc.viewbinding.nonreflection.binding
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.updateIf
 import pers.shawxingkwok.mvb.android.observe
@@ -21,8 +17,6 @@ import pers.shawxingkwok.mvb.android.saveMutableStateFlow
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 import java.util.*
 import kotlin.concurrent.timer
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 @SuppressLint("SetTextI18n")
 class StopwatchFragment : Fragment(R.layout.fragment_main) {

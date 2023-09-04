@@ -50,23 +50,16 @@ android {
 dependencies {
 
     implementation libs.androidx.coreKtx
+    implementation(libs.appcompat)
     implementation libs.androidx.lifecycleRuntimeKtx
-    implementation libs.activity.compose
-    implementation platform(libs.compose.bom)
-    implementation libs.ui
-    implementation libs.ui.graphics
-    implementation libs.ui.tooling.preview
-    implementation libs.material3
+    implementation libs.constraintlayout
+
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
-    androidTestImplementation platform(libs.compose.bom)
-    androidTestImplementation libs.ui.test.junit4
-    debugImplementation libs.ui.tooling
-    debugImplementation libs.ui.test.manifest
 }
 
 dependencies {
     implementation(project(":api"))
-    implementation("io.github.shawxingkwok:android-util-core:1.0.0")
+    implementation(libs.shawxing.androidUtilCore)
 }
