@@ -10,7 +10,7 @@ import pers.shawxingkwok.ktutil.updateIf
 import pers.shawxingkwok.mvb.demo.StopwatchUtil
 import pers.shawxingkwok.mvb.demo.databinding.ItemIntervalBinding
 
-class OrginalAdapter(private val intervals: MutableList<Int>) : RecyclerView.Adapter<KRecyclerViewAdapter.ViewBindingHolder<ItemIntervalBinding>>() {
+class OriginalAdapter(private val intervals: MutableList<Int>) : RecyclerView.Adapter<KRecyclerViewAdapter.ViewBindingHolder<ItemIntervalBinding>>() {
     private var max = 0
     private var min = 0
 

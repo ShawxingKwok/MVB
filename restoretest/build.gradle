@@ -34,9 +34,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures {
-        compose true
-    }
     composeOptions {
         kotlinCompilerExtensionVersion '1.4.3'
     }
@@ -48,7 +45,6 @@ android {
 }
 
 dependencies {
-
     implementation libs.androidx.coreKtx
     implementation(libs.appcompat)
     implementation libs.androidx.lifecycleRuntimeKtx
@@ -61,5 +57,5 @@ dependencies {
 
 dependencies {
     implementation(project(":api"))
-    implementation(libs.shawxing.androidUtilCore)
+    implementation(libs.bundles.shawxing)
 }

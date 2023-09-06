@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 import org.junit.runner.RunWith
+import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.mvb.android.*
 
 private var i = 0
@@ -18,15 +19,10 @@ internal class Observe {
     @Test
     fun start(){
         launchFragment<MyFragment>()
-        assert(i == 6)
+        assert(i == 4)
     }
 
     internal class MyFragment : Fragment() {
-        companion object{
-            private val _flow = flowOf(1)
-            private val _livedata = MutableLiveData(1)
-        }
-
         private fun act(name: String){
             i++
             // KLog.d(name)

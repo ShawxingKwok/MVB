@@ -35,6 +35,10 @@ public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Un
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
-            getValue().observe(lifecycleOwner, act)
+            lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver{
+                override fun onCreate(owner: LifecycleOwner) {
+                    getValue().observe(lifecycleOwner, act)
+                }
+            })
         }
     }

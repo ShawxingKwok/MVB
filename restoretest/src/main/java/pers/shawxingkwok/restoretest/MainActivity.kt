@@ -3,7 +3,9 @@ package pers.shawxingkwok.restoretest
 import android.os.Bundle
 import android.util.SparseArray
 import androidx.activity.ComponentActivity
+import androidx.annotation.VisibleForTesting
 import pers.shawxingkwok.androidutil.KLog
+import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.android.saveMutableLiveData
 import pers.shawxingkwok.mvb.android.saveMutableSharedFlow
@@ -19,7 +21,8 @@ class MainActivity : ComponentActivity() {
     private val stateFlow by saveMutableStateFlow { 0 }
 
     val liveData by saveMutableLiveData { 0 }
-
+    val emptyLiveData by saveMutableLiveData<_, Int>()
+    val nullableLiveData by saveMutableLiveData<_, Int?> { 1 }
     val sparseArray by save(P::class) { SparseArray<P>() }
 
     var number by save { BigDecimal(0.0) }
@@ -29,19 +32,21 @@ class MainActivity : ComponentActivity() {
 
         if (savedInstanceState == null){
             stateFlow.value++
+            assert(emptyLiveData.value == null)
             liveData.value = 1
+            nullableLiveData.value = null
             sharedFlow.tryEmit(listOf(arrayOf(P(2))))
             sharedFlow.tryEmit(listOf(arrayOf(P(3))))
             sparseArray.append(0, P(2))
             number += BigDecimal(1)
-
-            KLog.d(number)
         }else {
             assert(stateFlow.value == 1)
+            assert(emptyLiveData.value == null)
             assert(liveData.value == 1)
+            assert(nullableLiveData.value == null)
             assert(sharedFlow.replayCache.first().first().first().i == 2)
             assert(sparseArray.valueAt(0) == P(2))
-            KLog.d(number)
+            assert(number.toInt() == 1)
             KLog.d("done")
         }
     }

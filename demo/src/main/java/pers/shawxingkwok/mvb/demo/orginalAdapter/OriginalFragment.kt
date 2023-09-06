@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.androidutil.view.onClick
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.android.observe
@@ -28,14 +27,12 @@ import pers.shawxingkwok.mvb.demo.StopwatchUtil.whiteGrey
 import pers.shawxingkwok.mvb.demo.databinding.FragmentMainBinding
 import java.util.*
 import kotlin.concurrent.timer
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 @SuppressLint("SetTextI18n")
 class OriginalFragment : Fragment(R.layout.fragment_main) {
     private val binding by binding(FragmentMainBinding::bind)
     private val intervals by save { mutableListOf<Int>() }
-    private val adapter by fastLazy { OrginalAdapter(intervals.asReversed()) }
+    private val adapter by fastLazy { OriginalAdapter(intervals.asReversed()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
