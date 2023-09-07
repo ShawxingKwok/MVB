@@ -45,7 +45,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
 
     private var timer: Timer? = null
 
-    // `isRunning` is not saved because it's best to be false when recovered
+    // `isRunning` is not saved because it's best to be false when the app is restored
     private val isRunning by rmb { MutableStateFlow(false) }
         // if true, update duration and adapter periodically
         .observe {
@@ -83,6 +83,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
         }
 
     // suppress because tvLeftState is hinted 'unused' though it's actually observed.
+    // this problem could be fixed via lint in the future.
     @Suppress("unused")
     private val tvLeftState by rmb { combine(duration, isRunning){ a, b -> a to b } }
         .observe { (duration, isRunning) ->

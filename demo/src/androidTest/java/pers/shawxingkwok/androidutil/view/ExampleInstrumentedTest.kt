@@ -24,8 +24,6 @@ class ExampleInstrumentedTest {
     }
 }
 
-class X(val x: Int = 1)
-
 class Transformer(val bundle: Bundle) : Parcelable {
     override fun describeContents(): Int {
         return 0

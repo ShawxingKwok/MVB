@@ -11,6 +11,7 @@ import pers.shawxingkwok.mvb.android.saveMutableLiveData
 import pers.shawxingkwok.mvb.android.saveMutableSharedFlow
 import pers.shawxingkwok.mvb.android.saveMutableStateFlow
 import java.math.BigDecimal
+import java.util.LinkedList
 
 class MainActivity : ComponentActivity() {
     private val sharedFlow by saveMutableSharedFlow<_, List<Array<P>>>(
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
             nullableLiveData.value = null
             sharedFlow.tryEmit(listOf(arrayOf(P(2))))
             sharedFlow.tryEmit(listOf(arrayOf(P(3))))
-            sparseArray.append(0, P(2))
+            sparseArray.append(0, P(0))
             number += BigDecimal(1)
         }else {
             assert(stateFlow.value == 1)
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
             assert(liveData.value == 1)
             assert(nullableLiveData.value == null)
             assert(sharedFlow.replayCache.first().first().first().i == 2)
-            assert(sparseArray.valueAt(0) == P(2))
+            assert(sparseArray.valueAt(0) == P(0))
             assert(number.toInt() == 1)
             KLog.d("done")
         }

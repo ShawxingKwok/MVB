@@ -6,6 +6,7 @@ import androidx.fragment.app.testing.launchFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +30,7 @@ internal class Observe {
             assert(lifecycle.currentState == Lifecycle.State.STARTED)
         }
 
-        private val x by rmb { flowOf(1) }.observe { act("x") }
+        private val x: Flow<Int> by rmb { flowOf(1) }.observe { act("x") }
         private val y by saveMutableStateFlow { 1 }.observe { act("y") }
         private val z by saveMutableSharedFlow<_, Int>(replay = 1).observe { act("z") }
         private val a by saveMutableLiveData { 1 }.observe { act("a") }

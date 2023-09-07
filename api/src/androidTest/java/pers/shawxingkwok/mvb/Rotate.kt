@@ -6,10 +6,11 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragment
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
-import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.mvb.android.rmb
 import pers.shawxingkwok.mvb.android.save

@@ -2,21 +2,14 @@
 
 package pers.shawxingkwok.mvb
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import pers.shawxingkwok.mvb.android.*
 
-internal class Sample : Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        mvbScope.launch {
-
-        }
-    }
+internal class MyFragment : Fragment() {
+    val arr by rmb { intArrayOf(1, 2) }
+    var y by rmb { 2 }
 
     // val flow by save { MutableStateFlow(0) }
     //     .transform(
