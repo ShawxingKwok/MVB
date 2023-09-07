@@ -42,6 +42,9 @@ class Observe {
                 .observe {
                     // ...
                 }
+                // The lambda is active from STARTED by default,
+                // whereas you could also change it to RESUMED when observing `Flow`.
+                .observe(repeatOnResumed = true) {  }
         }
     }
 }
