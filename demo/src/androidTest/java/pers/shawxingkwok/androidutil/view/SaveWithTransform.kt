@@ -22,10 +22,11 @@ class SaveWithTransform {
 
         class Y(val i: Int = 0, val key: String? = null)
 
+        // generally convert to pair, triple or list when converted to multiple values
         var y by save { Y() }
             .transform(
                 convert = {
-                    it.i to it.key // generally convert to triple or list when more values
+                    it.i to it.key
                 },
                 recover = {(i, key) -> Y(i, key) }
             )

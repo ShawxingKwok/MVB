@@ -14,13 +14,18 @@ import kotlin.reflect.KProperty0
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
  */
-public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(act: suspend CoroutineScope.(T) -> Unit): M
+public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(
+    repeatOnResumed: Boolean = false,
+    act: suspend CoroutineScope.(T) -> Unit,
+): M
     where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
 =
     also { m ->
+        val state = if (repeatOnResumed) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
+
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->
             lifecycleOwner.lifecycleScope.launch {
-                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                lifecycleOwner.repeatOnLifecycle(state){
                     getValue().collect{ act(it) }
                 }
             }
