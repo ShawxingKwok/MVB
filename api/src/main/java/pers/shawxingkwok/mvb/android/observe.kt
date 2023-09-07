@@ -1,12 +1,10 @@
 package pers.shawxingkwok.mvb.android
 
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistryOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlin.reflect.KProperty0
 
 // Since lambdas on mvb properties won't take too many memories, here doesn't use inline to avoid
 // caring `@PublishedApi`.
