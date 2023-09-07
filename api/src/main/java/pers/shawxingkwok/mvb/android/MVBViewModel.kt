@@ -6,7 +6,7 @@ import pers.shawxingkwok.ktutil.fastLazy
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
-internal class MVBViewModel(internal val state: SavedStateHandle) : ViewModel() {
+internal class MVBViewModel : ViewModel() {
     private object NULL
 
     private val data = ConcurrentHashMap<String, Any>()
