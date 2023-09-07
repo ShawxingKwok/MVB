@@ -89,7 +89,7 @@ public inline fun <LVS, reified T> LVS.save(
     )
 
 /**
- * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
+ * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#transform).
  */
 public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
     noinline convert: (C) -> D,

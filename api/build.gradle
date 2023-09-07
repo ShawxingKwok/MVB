@@ -64,7 +64,7 @@ tasks.withType(KotlinCompile).configureEach{
 mavenPublishing {
     def artifactId = "mvb-android"
     def version = "1.0.0"
-    def isSnapshot = true
+    def isSnapshot = false
 
     if (isSnapshot) version += "-SNAPSHOT"
     pom {
