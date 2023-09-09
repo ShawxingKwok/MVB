@@ -1,22 +1,20 @@
 package pers.shawxingkwok.mvb.android
 
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.savedstate.SavedStateRegistryOwner
-import java.lang.NullPointerException
+import pers.shawxingkwok.ktutil.fastLazy
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
-public open class MVBData<LVS, T> internal constructor(
-    private val thisRef: LVS,
+public open class MVBData<LV, T> internal constructor(
+    private val thisRef: LV,
     private val initialize: (() -> T)? = null
 )
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 {
-    internal val actionsOnDelegate = mutableListOf<(LVS, KProperty<*>, String, () -> T) -> Unit>()
+    internal val actionsOnDelegate = mutableListOf<(LV, KProperty<*>, String, () -> T) -> Unit>()
 
     internal lateinit var key: String
         private set
@@ -26,10 +24,13 @@ public open class MVBData<LVS, T> internal constructor(
     @Volatile
     private var isInitialized: Boolean = false
 
-    public operator fun provideDelegate(thisRef: LVS, property: KProperty<*>) : ReadWriteProperty<LVS, T>{
+    internal val vm by fastLazy(thisRef::getMVBVm)
+
+    public operator fun provideDelegate(thisRef: LV, property: KProperty<*>) : ReadWriteProperty<LV, T>{
         val isMutable = property is KMutableProperty<*>
 
-        val propPath = thisRef.javaClass.canonicalName!! + "." + property.name
+        val propPath = thisRef::class.qualifiedName + "." + property.name
+        key =  propPath
 
         require(isMutable || initialize != null){
             "$propPath can't be immutable with a null `initialize`."
@@ -37,26 +38,11 @@ public open class MVBData<LVS, T> internal constructor(
 
         var t: T? = null
 
-        key = MVBData::class.qualifiedName + "#" + propPath
-
-        val vm by lazy(thisRef.savedStateRegistry) {
-            try {
-                ViewModelProvider(thisRef)[MVBViewModel::class.java]
-            } catch (e: IllegalStateException) {
-                error("Mvb values are kept in a viewModel which is not accessible at the moment.\n$e")
-            }
-        }
-
-        return object : ReadWriteProperty<LVS, T>{
-            override fun getValue(thisRef: LVS, property: KProperty<*>): T {
+        return object : ReadWriteProperty<LV, T>{
+            override fun getValue(thisRef: LV, property: KProperty<*>): T {
                 if (!isInitialized)
                     synchronized(this){
                         if (isInitialized) return@synchronized
-
-                        check(thisRef.savedStateRegistry.isRestored){
-                            "All mvb properties must be called after `super.onCreate(savedInstanceState)` " +
-                                    "in ${thisRef.javaClass.canonicalName}."
-                        }
 
                         val saver = saver
                         try {
@@ -90,7 +76,7 @@ public open class MVBData<LVS, T> internal constructor(
                     return t as T
             }
 
-            override fun setValue(thisRef: LVS, property: KProperty<*>, value: T) {
+            override fun setValue(thisRef: LV, property: KProperty<*>, value: T) {
                 isInitialized = true
 
                 t = value

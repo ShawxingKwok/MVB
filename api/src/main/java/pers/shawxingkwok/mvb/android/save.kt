@@ -3,8 +3,8 @@
 package pers.shawxingkwok.mvb.android
 
 import android.os.*
+import androidx.core.os.bundleOf
 import androidx.lifecycle.*
-import androidx.savedstate.SavedStateRegistryOwner
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,45 +12,38 @@ import java.io.Serializable
 import java.util.*
 import kotlin.reflect.KClass
 
-@Suppress("NAME_SHADOWING")
-public class SavableMVBData<LVS, T, C> @PublishedApi internal constructor(
+public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
     public var parcelableComponent: KClass<out Parcelable>?,
     @PublishedApi internal var savedType: KClass<C & Any>,
-    thisRef: LVS,
+    thisRef: LV,
     initialize: (() -> T)?,
 )
-: MVBData<LVS, T>(thisRef, initialize)
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: MVBData<LV, T>(thisRef, initialize)
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 {
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
     @PublishedApi internal var recover: ((Any?) -> Any?)? = null
 
+    @Suppress("UNCHECKED_CAST")
     override val saver by lazy(Saver.CREATOR){
-        val bundle = thisRef.savedStateRegistry.consumeRestoredStateForKey(key)
+        val state = vm.state
+        when(val bundle = state.get<Bundle>(key)){
+            null -> Saver(UNINITIALIZED, convert).also { state[key] = bundleOf("" to it) }
+            else -> {
+                Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
+                Saver.arrayClass = savedType.java.takeIf { it.isArray } as Class<Array<*>>?
+                Saver.recover = recover
 
-        if (bundle != null) {
-            Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
-            Saver.arrayClass = savedType.java.takeIf { it.isArray } as Class<Array<*>>?
-            Saver.recover = recover
+                // update [convert] to remove any possible references to old [thisRef].
+                val saver =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                        bundle.getParcelable("", Saver::class.java)!!
+                    else
+                        bundle.getParcelable("")!!
 
-            // update [convert] to remove any possible references to old [thisRef].
-            val saver =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                    bundle.getParcelable("", Saver::class.java)!!
-                else
-                    bundle.getParcelable("")!!
-
-            Saver.recover = null
-            saver.convert = convert
-            saver
-        }else
-            Saver(UNINITIALIZED, convert)
-    }
-
-    init {
-        actionsOnDelegate += { thisRef, _, key, _ ->
-            thisRef.savedStateRegistry.registerSavedStateProvider(key){
-                Bundle().also { it.putParcelable("", saver) }
+                Saver.recover = null
+                saver.convert = convert
+                saver
             }
         }
     }
@@ -74,12 +67,12 @@ internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get(){
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
-public inline fun <LVS, reified T> LVS.save(
+public inline fun <LV, reified T> LV.save(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
-: SavableMVBData<LVS, T, T>
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: SavableMVBData<LV, T, T>
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
     SavableMVBData(
         parcelableComponent = parcelableComponent.also { require(it?.isParcelableType ?: true) },
@@ -91,14 +84,14 @@ public inline fun <LVS, reified T> LVS.save(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#transform).
  */
-public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
+public inline fun <LV, T, C, reified D> SavableMVBData<LV, T, C>.transform(
     noinline convert: (C) -> D,
     noinline recover: (D) -> C,
 )
-: SavableMVBData<LVS, T, D>
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: SavableMVBData<LV, T, D>
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
-    (this as SavableMVBData<LVS, T, D>).also {
+    (this as SavableMVBData<LV, T, D>).also {
         it.savedType = D::class as KClass<D & Any>
 
         it.convert = when (val oldConvert = it.convert) {
@@ -115,14 +108,14 @@ public inline fun <LVS, T, C, reified D> SavableMVBData<LVS, T, C>.transform(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
-public inline fun <LVS, reified T> LVS.saveMutableStateFlow(
+public inline fun <LV, reified T> LV.saveMutableStateFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: () -> T,
 )
-: SavableMVBData<LVS, MutableStateFlow<T>, T>
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: SavableMVBData<LV, MutableStateFlow<T>, T>
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
-    save<LVS, MutableStateFlow<T>>(
+    save<LV, MutableStateFlow<T>>(
         parcelableComponent = parcelableComponent,
         initialize = { MutableStateFlow(initialize()) }
     )
@@ -134,20 +127,20 @@ public inline fun <LVS, reified T> LVS.saveMutableStateFlow(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
-public inline fun <LVS, reified T> LVS.saveMutableSharedFlow(
+public inline fun <LV, reified T> LV.saveMutableSharedFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     replay: Int = 0,
     extraBufferCapacity: Int = 0,
     onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
 )
-: SavableMVBData<LVS, MutableSharedFlow<T>, List<T>>
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: SavableMVBData<LV, MutableSharedFlow<T>, List<T>>
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
-    save<LVS, MutableSharedFlow<T>>(
+    save<LV, MutableSharedFlow<T>>(
         parcelableComponent = parcelableComponent,
         initialize = { MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow) }
     )
-    .transform<LVS, MutableSharedFlow<T>, MutableSharedFlow<T>, List<T>>(
+    .transform<LV, MutableSharedFlow<T>, MutableSharedFlow<T>, List<T>>(
         convert = { it.replayCache },
         recover = { cache ->
             val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
@@ -171,14 +164,14 @@ public inline fun <LVS, reified T> LVS.saveMutableSharedFlow(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
-public inline fun <LVS, reified T> LVS.saveMutableLiveData(
+public inline fun <LV, reified T> LV.saveMutableLiveData(
     parcelableComponent: KClass<out Parcelable>? = null,
     noinline initialize: (() -> T)? = null,
 )
-: SavableMVBData<LVS, MutableLiveData<T>, Any?>
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+: SavableMVBData<LV, MutableLiveData<T>, Any?>
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
-    save<LVS, MutableLiveData<T>>(
+    save<LV, MutableLiveData<T>>(
         parcelableComponent = parcelableComponent,
         initialize = {
             if (initialize == null)

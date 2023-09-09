@@ -1,7 +1,6 @@
 package pers.shawxingkwok.mvb.android
 
 import androidx.lifecycle.*
-import androidx.savedstate.SavedStateRegistryOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -12,11 +11,11 @@ import kotlinx.coroutines.launch
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
  */
-public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(
+public fun <LV, T, F: Flow<T>, M: MVBData<LV, F>> M.observe(
     repeatOnResumed: Boolean = false,
     act: suspend CoroutineScope.(T) -> Unit,
 ): M
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
     also { m ->
         val state = if (repeatOnResumed) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
@@ -33,8 +32,8 @@ public fun <LVS, T, F: Flow<T>, M: MVBData<LVS, F>> M.observe(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#observe).
  */
-public fun <LVS, T, L: LiveData<T>, M: MVBData<LVS, L>> M.observe(act: (T) -> Unit): M
-    where LVS: LifecycleOwner, LVS: ViewModelStoreOwner, LVS: SavedStateRegistryOwner
+public fun <LV, T, L: LiveData<T>, M: MVBData<LV, L>> M.observe(act: (T) -> Unit): M
+    where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
     also { m ->
         m.actionsOnDelegate += { lifecycleOwner, _, _, getValue ->

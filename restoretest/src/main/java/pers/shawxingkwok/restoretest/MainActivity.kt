@@ -3,15 +3,12 @@ package pers.shawxingkwok.restoretest
 import android.os.Bundle
 import android.util.SparseArray
 import androidx.activity.ComponentActivity
-import androidx.annotation.VisibleForTesting
 import pers.shawxingkwok.androidutil.KLog
-import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.android.saveMutableLiveData
 import pers.shawxingkwok.mvb.android.saveMutableSharedFlow
 import pers.shawxingkwok.mvb.android.saveMutableStateFlow
 import java.math.BigDecimal
-import java.util.LinkedList
 
 class MainActivity : ComponentActivity() {
     private val sharedFlow by saveMutableSharedFlow<_, List<Array<P>>>(
@@ -50,10 +47,5 @@ class MainActivity : ComponentActivity() {
             assert(number.toInt() == 1)
             KLog.d("done")
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putSparseParcelableArray("as", SparseArray<P>())
     }
 }
