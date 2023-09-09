@@ -31,7 +31,7 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
             null -> Saver(UNINITIALIZED, convert).also { state[key] = bundleOf("" to it) }
             else -> {
                 Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
-                Saver.arrayClass = savedType.java.takeIf { it.isArray } as Class<Array<*>>?
+                Saver.arrayClass = savedType.java.takeIf { it.isArray && !it.componentType.isPrimitive } as Class<Array<*>>?
                 Saver.recover = recover
 
                 // update [convert] to remove any possible references to old [thisRef].

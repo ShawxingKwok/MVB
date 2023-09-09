@@ -43,7 +43,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
             adapter.update(sizeChanged)
         }
 
-    private var timer: Timer? = null
+    private var timer: Timer? by rmb{ null }
 
     // `isRunning` is not saved because it's best to be false when the app is restored.
     private val isRunning by rmb { MutableStateFlow(false) }
