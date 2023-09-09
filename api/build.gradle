@@ -41,10 +41,10 @@ android {
 }
 
 dependencies {
-    implementation libs.androidx.coreKtx
+    implementation libs.coreKtx
     implementation libs.appcompat
     implementation(libs.bundles.shawxing)
-    implementation libs.androidx.lifecycleRuntimeKtx
+    implementation libs.lifecycle.runtimeKtx
     implementation libs.lifecycle.viewmodel.ktx
 
     testImplementation libs.junit
@@ -63,7 +63,7 @@ tasks.withType(KotlinCompile).configureEach{
 // publish
 mavenPublishing {
     def artifactId = "mvb-android"
-    def version = "1.0.2"
+    def version = "1.0.3"
     def isSnapshot = false
 
     if (isSnapshot) version += "-SNAPSHOT"

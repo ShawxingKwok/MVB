@@ -45,9 +45,9 @@ android {
 }
 
 dependencies {
-    implementation libs.androidx.coreKtx
+    implementation libs.coreKtx
     implementation(libs.appcompat)
-    implementation libs.androidx.lifecycleRuntimeKtx
+    implementation libs.lifecycle.runtimeKtx
     implementation libs.constraintlayout
 
     testImplementation libs.junit

@@ -25,6 +25,8 @@ class MainActivity : ComponentActivity() {
 
     var number by save { BigDecimal(0.0) }
 
+    val ints by save { intArrayOf(0) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,6 +39,7 @@ class MainActivity : ComponentActivity() {
             sharedFlow.tryEmit(listOf(arrayOf(P(3))))
             sparseArray.append(0, P(0))
             number += BigDecimal(1)
+            ints[0]++
         }else {
             assert(stateFlow.value == 1)
             assert(emptyLiveData.value == null)
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
             assert(sharedFlow.replayCache.first().first().first().i == 2)
             assert(sparseArray.valueAt(0) == P(0))
             assert(number.toInt() == 1)
+            assert(ints.first() == 1)
             KLog.d("done")
         }
     }

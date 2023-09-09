@@ -50,9 +50,6 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
 }
 
 @PublishedApi
-internal val KClass<*>.isParcelableType: Boolean get() = Parcelable::class.java.isAssignableFrom(this.java)
-
-@PublishedApi
 internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get(){
     if (Parcelable::class.java.isAssignableFrom(this.java))
         return this as KClass<out Parcelable>
@@ -75,7 +72,7 @@ public inline fun <LV, reified T> LV.save(
     where LV: LifecycleOwner, LV: ViewModelStoreOwner
 =
     SavableMVBData(
-        parcelableComponent = parcelableComponent.also { require(it?.isParcelableType ?: true) },
+        parcelableComponent = parcelableComponent,
         savedType = T::class as KClass<T & Any>,
         thisRef = this,
         initialize = initialize
