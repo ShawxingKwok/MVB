@@ -24,17 +24,14 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
     @PublishedApi internal var recover: ((Any?) -> Any?)? = null
 
-    @Suppress("UNCHECKED_CAST")
     override val saver by lazy(Saver.CREATOR){
         val state = vm.state
         when(val bundle = state.get<Bundle>(key)){
             null -> Saver(UNINITIALIZED, convert).also { state[key] = bundleOf("" to it) }
             else -> {
                 Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
-                Saver.arrayClass = savedType.java.takeIf { it.isArray && !it.componentType.isPrimitive } as Class<Array<*>>?
                 Saver.recover = recover
 
-                // update [convert] to remove any possible references to old [thisRef].
                 val saver =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                         bundle.getParcelable("", Saver::class.java)!!
@@ -42,6 +39,7 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
                         bundle.getParcelable("")!!
 
                 Saver.recover = null
+                // update [convert] to remove any possible references to old [thisRef].
                 saver.convert = convert
                 saver
             }
@@ -141,15 +139,7 @@ public inline fun <LV, reified T> LV.saveMutableSharedFlow(
         convert = { it.replayCache },
         recover = { cache ->
             val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
-
-            cache.map{
-                if(it is Array<*>)
-                    Arrays.copyOf(it as Array<*>, it.size, T::class.java as Class<out Array<T>>) as T
-                else
-                    it
-            }
-            .forEach(flow::tryEmit)
-
+            cache.forEach(flow::tryEmit)
             flow
         }
     )

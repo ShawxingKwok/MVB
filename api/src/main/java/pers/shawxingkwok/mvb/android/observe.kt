@@ -1,5 +1,6 @@
 package pers.shawxingkwok.mvb.android
 
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow

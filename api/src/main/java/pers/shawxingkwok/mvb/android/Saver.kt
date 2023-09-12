@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
 import pers.shawxingkwok.ktutil.updateIf
-import java.util.*
 
 internal class Saver(
     var value: Any?,
@@ -23,7 +22,6 @@ internal class Saver(
 
     companion object CREATOR : Parcelable.Creator<Saver> {
         var parcelableLoader: ClassLoader? = null
-        var arrayClass: Class<Array<*>>? = null
         var recover: ((Any?) -> Any?)? = null
 
         override fun createFromParcel(parcel: Parcel): Saver {
@@ -35,9 +33,6 @@ internal class Saver(
                     UNINITIALIZED
                 else
                     parcel.readValue(parcelableLoader)
-                    .updateIf({ arrayClass != null }){
-                        Arrays.copyOf(it as Array<*>, it.size, arrayClass!!)
-                    }
                     .updateIf({ recover != null }){ recover!!(it) }
 
             return Saver(value)

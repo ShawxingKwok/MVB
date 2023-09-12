@@ -11,7 +11,12 @@ import pers.shawxingkwok.mvb.android.saveMutableStateFlow
 import java.math.BigDecimal
 
 class MainActivity : ComponentActivity() {
-    private val sharedFlow by saveMutableSharedFlow<_, List<Array<P>>>(
+    private val sharedFlow by saveMutableSharedFlow<_, Array<Any>>(
+        replay = 3,
+        parcelableComponent = P::class
+    )
+
+    private val _sharedFlow by saveMutableSharedFlow<_, Array<P>>(
         replay = 3,
         parcelableComponent = P::class
     )
@@ -35,8 +40,10 @@ class MainActivity : ComponentActivity() {
             assert(emptyLiveData.value == null)
             liveData.value = 1
             nullableLiveData.value = null
-            sharedFlow.tryEmit(listOf(arrayOf(P(2))))
-            sharedFlow.tryEmit(listOf(arrayOf(P(3))))
+            sharedFlow.tryEmit(arrayOf(P(2)))
+            sharedFlow.tryEmit(arrayOf(""))
+            _sharedFlow.tryEmit(arrayOf(P(2)))
+            _sharedFlow.tryEmit(arrayOf(P(3)))
             sparseArray.append(0, P(0))
             number += BigDecimal(1)
             ints[0]++
@@ -45,7 +52,8 @@ class MainActivity : ComponentActivity() {
             assert(emptyLiveData.value == null)
             assert(liveData.value == 1)
             assert(nullableLiveData.value == null)
-            assert(sharedFlow.replayCache.first().first().first().i == 2)
+            assert(sharedFlow.replayCache.first().first() is P)
+            assert(_sharedFlow.replayCache.first().first().i == 2)
             assert(sparseArray.valueAt(0) == P(0))
             assert(number.toInt() == 1)
             assert(ints.first() == 1)
