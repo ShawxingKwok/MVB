@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
 import pers.shawxingkwok.ktutil.updateIf
+import kotlin.reflect.KClass
 
 internal class Saver(
     var value: Any?,
@@ -21,8 +22,21 @@ internal class Saver(
     }
 
     companion object CREATOR : Parcelable.Creator<Saver> {
-        var parcelableLoader: ClassLoader? = null
-        var recover: ((Any?) -> Any?)? = null
+        private var parcelableComponent: KClass<out Parcelable>? = null
+        private var parcelableLoader: ClassLoader? = null
+        private var recover: ((Any?) -> Any?)? = null
+
+        fun prepare(parcelableComponent: KClass<out Parcelable>?, recover: ((Any?) -> Any?)?){
+            this.parcelableComponent = parcelableComponent
+            parcelableLoader = parcelableComponent?.java?.classLoader
+            this.recover = recover
+        }
+
+        fun clear(){
+            parcelableComponent = null
+            parcelableLoader = null
+            recover = null
+        }
 
         override fun createFromParcel(parcel: Parcel): Saver {
             @SuppressLint("ParcelClassLoader")
@@ -33,6 +47,10 @@ internal class Saver(
                     UNINITIALIZED
                 else
                     parcel.readValue(parcelableLoader)
+                    // convert Parcelable[] to the actual.
+                    // However, the inner Parcelable[] can't be parsed here.
+                    // This problem could only be fixed by the authority.
+                    .convertParcelableArrayIfNeeded(parcelableComponent)
                     .updateIf({ recover != null }){ recover!!(it) }
 
             return Saver(value)

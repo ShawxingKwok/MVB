@@ -5,17 +5,11 @@ package pers.shawxingkwok.androidutil.view
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import pers.shawxingkwok.mvb.android.rmb
-import pers.shawxingkwok.mvb.android.save
 import pers.shawxingkwok.mvb.android.saveMutableLiveData
-
-fun getFilteredData(query: String): LiveData<List<String>> {
-    TODO()
-}
 
 class SaveLiveData{
     class MyViewModel(private val state: SavedStateHandle) : ViewModel(){

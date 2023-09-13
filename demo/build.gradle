@@ -47,9 +47,10 @@ dependencies {
     implementation libs.viewbindingKtx
 
     testImplementation libs.junit
-    androidTestImplementation libs.kotlin.reflect
+    androidTestImplementation(libs.androidx.fragment.test)
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.kotlin.reflect
 }
 
 //region shawxingkwok: mvb

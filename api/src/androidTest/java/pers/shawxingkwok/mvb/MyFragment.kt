@@ -3,9 +3,11 @@
 package pers.shawxingkwok.mvb
 
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import pers.shawxingkwok.mvb.android.*
+import pers.shawxingkwok.mvb.android.observe
+import pers.shawxingkwok.mvb.android.rmb
+import pers.shawxingkwok.mvb.android.saveMutableStateFlow
+import pers.shawxingkwok.mvb.android.transform
 
 internal class MyFragment : Fragment() {
     val arr by rmb { intArrayOf(1, 2) }

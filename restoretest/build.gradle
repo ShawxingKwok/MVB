@@ -57,5 +57,6 @@ dependencies {
 
 dependencies {
     implementation(project(":api"))
+//    implementation("io.github.shawxingkwok:mvb-android:1.0.5")
     implementation(libs.bundles.shawxing)
 }

@@ -12,6 +12,17 @@ import java.io.Serializable
 import java.util.*
 import kotlin.reflect.KClass
 
+@PublishedApi
+internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get() {
+    fun Class<*>.isParcelable(): Boolean =
+        Parcelable::class.java.isAssignableFrom(this)
+
+    return if (this.java.isParcelable())
+        this as KClass<out Parcelable>
+    else
+        java.componentType?.takeIf { it.isParcelable() }?.kotlin as KClass<out Parcelable>?
+}
+
 public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
     public var parcelableComponent: KClass<out Parcelable>?,
     @PublishedApi internal var savedType: KClass<C & Any>,
@@ -29,8 +40,10 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
         when(val bundle = state.get<Bundle>(key)){
             null -> Saver(UNINITIALIZED, convert).also { state[key] = bundleOf("" to it) }
             else -> {
-                Saver.parcelableLoader = (parcelableComponent ?: savedType.parcelableComponent)?.java?.classLoader
-                Saver.recover = recover
+                Saver.prepare(
+                    parcelableComponent = parcelableComponent ?: savedType.parcelableComponent,
+                    recover = recover,
+                )
 
                 val saver =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -38,25 +51,14 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
                     else
                         bundle.getParcelable("")!!
 
-                Saver.recover = null
-                // update [convert] to remove any possible references to old [thisRef].
+                Saver.clear()
+
+                // update [convert] to remove any possible reference to old [thisRef].
                 saver.convert = convert
                 saver
             }
         }
     }
-}
-
-@PublishedApi
-internal val KClass<*>.parcelableComponent: KClass<out Parcelable>? get(){
-    if (Parcelable::class.java.isAssignableFrom(this.java))
-        return this as KClass<out Parcelable>
-
-    val component = java.componentType ?: return null
-    if (Parcelable::class.java.isAssignableFrom(component))
-        return component.kotlin as KClass<out Parcelable>
-
-    return null
 }
 
 /**
@@ -122,6 +124,7 @@ public inline fun <LV, reified T> LV.saveMutableStateFlow(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
+@Suppress("NAME_SHADOWING")
 public inline fun <LV, reified T> LV.saveMutableSharedFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     replay: Int = 0,
@@ -139,10 +142,16 @@ public inline fun <LV, reified T> LV.saveMutableSharedFlow(
         convert = { it.replayCache },
         recover = { cache ->
             val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
-            cache.forEach(flow::tryEmit)
+
+            val parcelableComponent = parcelableComponent ?: T::class.parcelableComponent
+
+            cache.map{ it.convertParcelableArrayIfNeeded(parcelableComponent) }
+            .forEach(flow::tryEmit)
+
             flow
         }
     )
+    // This part is essential.
     .also {
         if (it.parcelableComponent == null)
             it.parcelableComponent = T::class.parcelableComponent

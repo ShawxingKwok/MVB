@@ -2,9 +2,8 @@ package pers.shawxingkwok.restoretest
 
 import android.os.Parcel
 import android.os.Parcelable
-import pers.shawxingkwok.androidutil.KLog
 
-data class P(val i: Int) : Parcelable {
+data class P(var i: Int) : Parcelable {
     override fun describeContents(): Int {
         return 0
     }
