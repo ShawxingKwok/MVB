@@ -4,6 +4,7 @@ import android.os.Parcelable
 import java.util.*
 import kotlin.reflect.KClass
 
+// TODO(rename with `convertIfIsParcelableArray` in the next version)
 @Suppress("UNCHECKED_CAST")
 @PublishedApi
 internal fun <T> T.convertParcelableArrayIfNeeded(parcelableComponent: KClass<out Parcelable>?): T =
