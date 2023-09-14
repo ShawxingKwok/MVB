@@ -1,13 +1,13 @@
-@file:Suppress("DEPRECATION", "UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST")
 
 package pers.shawxingkwok.mvb.android
 
 import android.os.*
-import androidx.core.os.bundleOf
 import androidx.lifecycle.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import pers.shawxingkwok.ktutil.updateIf
 import java.io.Serializable
 import java.util.*
 import kotlin.reflect.KClass
@@ -35,30 +35,25 @@ public class SavableMVBData<LV, T, C> @PublishedApi internal constructor(
     @PublishedApi internal var convert: ((Any?) -> Any?)? = null
     @PublishedApi internal var recover: ((Any?) -> Any?)? = null
 
-    override val saver by lazy(Saver.CREATOR){
-        val state = vm.state
-        when(val bundle = state.get<Bundle>(key)){
-            null -> Saver(UNINITIALIZED, convert).also { state[key] = bundleOf("" to it) }
-            else -> {
-                Saver.prepare(
-                    parcelableComponent = parcelableComponent ?: savedType.parcelableComponent,
-                    recover = recover,
-                )
+    override fun getContainer(key: String, vm: MVBViewModel, getV: () -> Any?): Saver =
+        synchronized(vm.state) {
+            vm.state.get<Saver>(key)?.let { return@synchronized it }
 
-                val saver =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                        bundle.getParcelable("", Saver::class.java)!!
-                    else
-                        bundle.getParcelable("")!!
-
-                Saver.clear()
-
-                // update [convert] to remove any possible reference to old [thisRef].
-                saver.convert = convert
-                saver
-            }
+            val parcelableComponent = parcelableComponent ?: savedType.parcelableComponent
+            val saver = Saver(parcelableComponent, getV(), true)
+            vm.state[key] = saver
+            saver
         }
-    }
+        .also {
+            if (!it.recovered) {
+                it.recovered = true
+                if (recover != null)
+                    it.value = recover!!(it.value)
+            }
+
+            // always update [convert] to remove any possible reference to the old [thisRef].
+            it.convert = convert
+        }
 }
 
 /**
@@ -124,7 +119,6 @@ public inline fun <LV, reified T> LV.saveMutableStateFlow(
 /**
  * See [doc](https://shawxingkwok.github.io/ITWorks/docs/multiplatform/mvb/android/#save).
  */
-@Suppress("NAME_SHADOWING")
 public inline fun <LV, reified T> LV.saveMutableSharedFlow(
     parcelableComponent: KClass<out Parcelable>? = null,
     replay: Int = 0,
@@ -143,9 +137,16 @@ public inline fun <LV, reified T> LV.saveMutableSharedFlow(
         recover = { cache ->
             val flow = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
 
-            val parcelableComponent = parcelableComponent ?: T::class.parcelableComponent
-
-            cache.map{ it.convertParcelableArrayIfNeeded(parcelableComponent) }
+            // This function is from "io.github.shawxingkwok:kt-util:1.0.2"
+            cache.updateIf({
+                val componentType = T::class.java.componentType ?: return@updateIf false
+                Parcelable::class.java.isAssignableFrom(componentType)
+            }){
+                it.map { arr ->
+                    val componentType = T::class.java.componentType as Class<out Parcelable>
+                    (arr as Array<Parcelable>).convertToActual(componentType) as T
+                }
+            }
             .forEach(flow::tryEmit)
 
             flow

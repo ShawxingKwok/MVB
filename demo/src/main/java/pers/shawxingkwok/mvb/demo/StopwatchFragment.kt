@@ -20,6 +20,7 @@ import kotlin.concurrent.timer
 
 @SuppressLint("SetTextI18n")
 class StopwatchFragment : Fragment(R.layout.fragment_main) {
+    //region static processing: binding, adapter
     private val binding by binding(FragmentMainBinding::bind)
     private val adapter = StopwatchAdapter()
 
@@ -29,8 +30,9 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
         binding.rv.layoutManager = LinearLayoutManager(requireContext())
         setFixedListeners()
     }
+    //endregion
 
-    //region bridge
+    //region bridge: duration, intervals, isRunning
     private val duration by saveMutableStateFlow { 0 }
         .observe {
             binding.tvDuration.text = StopwatchUtil.formatDuration(it)
@@ -47,7 +49,7 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
 
     // `isRunning` is not saved because it's best to be false when the app is restored.
     private val isRunning by rmb { MutableStateFlow(false) }
-        // if true, update duration and adapter periodically
+        // if true, update duration and intervals periodically
         .observe {
             when{
                 !it -> {

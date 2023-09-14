@@ -35,20 +35,26 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures {
-        viewBinding true
+    packagingOptions {
+        exclude 'META-INF/*'
     }
 }
 
 dependencies {
-    implementation libs.coreKtx
     implementation libs.appcompat
     implementation(libs.bundles.shawxing)
     implementation libs.lifecycle.runtimeKtx
     implementation libs.lifecycle.viewmodel.ktx
+    implementation libs.coreKtx
 
-    testImplementation libs.junit
-    androidTestImplementation(libs.androidx.fragment.test)
+//    androidTestImplementation libs.mockito.core
+//    androidTestImplementation libs.bytebuddy.android
+//    androidTestImplementation libs.mockito.inline
+    androidTestImplementation libs.mockito.android
+    androidTestImplementation libs.mockk
+    androidTestImplementation libs.kotlin.test
+    androidTestImplementation libs.junit
+    androidTestImplementation libs.androidx.fragment.test
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
 }
@@ -63,7 +69,7 @@ tasks.withType(KotlinCompile).configureEach{
 // publish
 mavenPublishing {
     def artifactId = "mvb-android"
-    def version = "1.0.5"
+    def version = "1.0.6"
     def isSnapshot = false
 
     if (isSnapshot) version += "-SNAPSHOT"

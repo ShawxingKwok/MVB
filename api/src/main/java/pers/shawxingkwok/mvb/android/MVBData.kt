@@ -2,12 +2,10 @@ package pers.shawxingkwok.mvb.android
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
-import pers.shawxingkwok.ktutil.fastLazy
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 
-@Suppress("UNCHECKED_CAST")
 public open class MVBData<LV, T> internal constructor(
     private val thisRef: LV,
     private val initialize: (() -> T)? = null
@@ -16,80 +14,51 @@ public open class MVBData<LV, T> internal constructor(
 {
     internal val actionsOnDelegate = mutableListOf<(LV, KProperty<*>, String, () -> T) -> Unit>()
 
-    internal lateinit var key: String
-        private set
-
-    internal open val saver: Saver? = null
-
-    @Volatile
-    private var isInitialized: Boolean = false
-
-    internal val vm by fastLazy(thisRef::getMVBVm)
-
-    public operator fun provideDelegate(thisRef: LV, property: KProperty<*>) : ReadWriteProperty<LV, T>{
-        val isMutable = property is KMutableProperty<*>
-
-        val propPath = thisRef::class.qualifiedName + "." + property.name
-        key =  propPath
-
-        require(isMutable || initialize != null){
-            "$propPath can't be immutable with a null `initialize`."
+    internal open fun getContainer(key: String, vm: MVBViewModel, getV: () -> Any?) =
+        vm.map.getOrPut(key){
+            Container(getV())
         }
 
-        var t: T? = null
+    public operator fun provideDelegate(thisRef: LV, property: KProperty<*>) : ReadWriteProperty<LV, T>{
+        val propPath = thisRef::class.qualifiedName + "." + property.name
+
+        val isMutable = property is KMutableProperty<*>
+
+        val container by lazy(
+            mode = if (isMutable) LazyThreadSafetyMode.NONE else LazyThreadSafetyMode.SYNCHRONIZED
+        ){
+            getContainer(propPath, thisRef.getMVBVm()) {
+                if (isMutable)
+                    UNINITIALIZED
+                else {
+                    requireNotNull(initialize) {
+                        "$propPath can't be immutable with a null `initialize`."
+                    }
+                    initialize.invoke()
+                }
+            }
+        }
 
         return object : ReadWriteProperty<LV, T>{
             override fun getValue(thisRef: LV, property: KProperty<*>): T {
-                if (!isInitialized)
-                    synchronized(this){
-                        if (isInitialized) return@synchronized
-
-                        val saver = saver
-                        try {
-                            when{
-                                saver == null -> {
-                                    val v = vm.getValue(key)
-
-                                    t =
-                                        if (v !== UNINITIALIZED) {
-                                            v as T
-                                        } else
-                                            initialize!!().also { vm.setValue(key, it) }
-                                }
-
-                                saver.value == UNINITIALIZED -> saver.value = initialize!!()
-                            }
-                        } catch (e: NullPointerException) {
-                            checkNotNull(initialize){
-                                "At $propPath, the lambda 'initialize' is null, which means you should set " +
-                                        "the value before you get it."
-                            }
-                            throw e
-                        }
-
-                        isInitialized = true
+                if (isMutable && container.value === UNINITIALIZED) {
+                    checkNotNull(initialize){
+                        "At $propPath, the lambda 'initialize' is null, which means you should set " +
+                        "the value before you get it."
                     }
-
-                if (saver != null)
-                    return saver!!.value as T
-                else
-                    return t as T
+                    container.value = initialize.invoke()
+                }
+                @Suppress("UNCHECKED_CAST")
+                return container.value as T
             }
 
             override fun setValue(thisRef: LV, property: KProperty<*>, value: T) {
-                isInitialized = true
-
-                t = value
-
-                if (saver != null)
-                    saver!!.value = value
-                else
-                    vm.setValue(key, value)
+                container.value = value
             }
         }
         .also { delegate ->
             actionsOnDelegate.forEach {
-                it(thisRef, property, key){
+                it(thisRef, property, propPath) {
                     delegate.getValue(thisRef, property)
                 }
             }

@@ -4,29 +4,25 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MutableLiveData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 import org.junit.runner.RunWith
-import pers.shawxingkwok.androidutil.KLog
 import pers.shawxingkwok.mvb.android.*
-
-private var i = 0
 
 @RunWith(AndroidJUnit4::class)
 internal class Observe {
     @Test
     fun start(){
         launchFragment<MyFragment>()
-        assert(i == 4)
     }
 
     internal class MyFragment : Fragment() {
+        private val names = mutableListOf<String>()
+
         private fun act(name: String){
-            i++
-            // KLog.d(name)
+            names += name
             assert(lifecycle.currentState == Lifecycle.State.STARTED)
         }
 
@@ -38,6 +34,43 @@ internal class Observe {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             z.tryEmit(1)
+        }
+
+        override fun onResume() {
+            super.onResume()
+            assertAll(::x, ::y, ::z, ::a){
+                assert(it.name in names)
+            }
+        }
+    }
+}
+
+@RunWith(AndroidJUnit4::class)
+internal class Observe_ {
+
+    @Test
+    fun checkObserveFlowOnResume() {
+        launchFragment<MyFragment>()
+    }
+
+    internal class MyFragment : Fragment(){
+        val observedPropNames = mutableListOf<String>()
+
+        private val a by rmb { flowOf(1) }.observe(true){
+            observedPropNames += "a"
+            assert(lifecycle.currentState == Lifecycle.State.RESUMED)
+        }
+
+        private val b by save { flowOf(1) }.observe(true){
+            observedPropNames += "b"
+            assert(lifecycle.currentState == Lifecycle.State.RESUMED)
+        }
+
+        override fun onDestroy() {
+            super.onDestroy()
+            assertAll("a", "b"){
+                assert(it in observedPropNames)
+            }
         }
     }
 }

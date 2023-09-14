@@ -15,12 +15,13 @@ internal class ParcelableComponent {
 
         /**
          * Pass `KClass<out Parcelable>` (`User::class` in this case) when ultimately
-         * saved as `List<out Parcelable>`/`SparseArray<out Parcelable>`.
+         * saved in `ArrayList`/`SparseArray`/`HashMap`.
          *
          * 'ultimately' means saved types change with `transform`.
          */
         val userList by save(User::class) { mutableListOf<User>() }
         val userSparseArr by save(User::class) { SparseArray<User>() }
+        val userMap by save(User::class){ mutableMapOf<String, User>() }
 
         /**
          * `User::class` could be automatically recognized in cases below.

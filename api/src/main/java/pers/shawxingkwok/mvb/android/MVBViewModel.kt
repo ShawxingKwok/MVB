@@ -2,21 +2,13 @@ package pers.shawxingkwok.mvb.android
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import java.util.concurrent.ConcurrentHashMap
 
 internal class MVBViewModel(val state: SavedStateHandle) : ViewModel() {
-    private object NULL
+    // viewModelScope is not thread-safe.
+    val scope by lazy{ viewModelScope }
 
-    private val data = ConcurrentHashMap<String, Any>()
-
-    fun getValue(key: String): Any? =
-        when(val v = data[key]){
-            null -> UNINITIALIZED
-            NULL -> null
-            else -> v
-        }
-
-    fun setValue(key: String, value: Any?){
-        data[key] = value ?: NULL
-    }
+    // keeps data from `rmb`
+    val map = ConcurrentHashMap<String, Container>()
 }

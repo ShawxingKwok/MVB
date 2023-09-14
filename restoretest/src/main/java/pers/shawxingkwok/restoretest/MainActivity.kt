@@ -6,11 +6,9 @@ import android.os.Bundle
 import android.util.SparseArray
 import androidx.activity.ComponentActivity
 import pers.shawxingkwok.androidutil.KLog
-import pers.shawxingkwok.mvb.android.save
-import pers.shawxingkwok.mvb.android.saveMutableLiveData
-import pers.shawxingkwok.mvb.android.saveMutableSharedFlow
-import pers.shawxingkwok.mvb.android.saveMutableStateFlow
+import pers.shawxingkwok.mvb.android.*
 import java.math.BigDecimal
+import java.util.concurrent.atomic.AtomicInteger
 
 inline fun <reified T> Any?.isArray() =
     this is Array<*> && javaClass.componentType == T::class.java
@@ -32,18 +30,22 @@ class MainActivity : ComponentActivity() {
     val liveData by saveMutableLiveData { 0 }
     val emptyLiveData by saveMutableLiveData<_, Int>()
     val nullableLiveData by saveMutableLiveData<_, Int?> { 1 }
+
     val sparseArray by save(P::class) { SparseArray<P>() }
-
     var number by save { BigDecimal(0.0) }
-
     val ints by save { intArrayOf(0) }
 
-    val ps by save { arrayOf(P(0)) }
+    val ps by save { arrayOf(P(0), null)}
     val _ps by save(P::class) { listOf(arrayOf(P(0))) }
 
     val qs by save { arrayOf(Q1(), Q2()) }
     val _qs by save { listOf(arrayOf(Q1(), Q2())) }
 
+    val compound by save(P::class) { arrayListOf(P(0), 0) }
+
+    val addedTimes = AtomicInteger()
+
+    val map by save(P::class) { mapOf("p" to P(0)) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,12 +60,14 @@ class MainActivity : ComponentActivity() {
             sparseArray.append(0, P(0))
             number += BigDecimal(1)
             ints[0]++
-            ps[0].i++
+            (compound.first() as P).i = 1
+            compound[1] = 1
+            (ps[0] as P).i++
             _ps[0][0].i++
             qs[0].i++
             _qs.first()[0].i++
+            map.values.first().i = 1
         }else {
-
             assert(stateFlow.value == 1)
             assert(emptyLiveData.value == null)
             assert(liveData.value == 1)
@@ -76,8 +80,12 @@ class MainActivity : ComponentActivity() {
             assert(ps.isArray<P>())
             assert(qs.isArray<Q>())
             assert(_qs.first().isArray<Q>())
-            // This parcelable bug should be fixed by the authority
-            KLog.d(_ps.first().isArray<Q>())
+            assert((compound[0] as P).i == 1)
+            assert(compound[1] == 1)
+            assert(map.values.first().i == 1)
+            // This parcelable bug should be fixed by the authority.
+            // In the other hand, List<Array<P>> does not follow Parcelize rules at present.
+            KLog.d("List<Array<Parcelable>> is allowed: ${_ps.first().isArray<Q>()}")
             KLog.d("done")
         }
     }

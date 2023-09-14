@@ -10,8 +10,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import pers.shawxingkwok.mvb.android.observe
 import pers.shawxingkwok.mvb.android.rmb
 
@@ -42,8 +40,8 @@ class Observe {
                 .observe {
                     // ...
                 }
-                // The lambda is active from STARTED by default,
-                // whereas you could also change it to RESUMED when observing `Flow`.
+                // The lambda is active between STARTED and STOPPED by default,
+                // whereas you could also change it to `RESUMED & PAUSED` when observing `Flow`.
                 .observe(repeatOnResumed = true) {  }
         }
     }

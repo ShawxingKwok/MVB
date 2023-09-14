@@ -1,59 +1,52 @@
 package pers.shawxingkwok.mvb.android
 
-import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
 import pers.shawxingkwok.ktutil.updateIf
 import kotlin.reflect.KClass
 
 internal class Saver(
-    var value: Any?,
-    var convert: ((Any?) -> Any?)? = null
+    private val parcelableComponent: KClass<out Parcelable>?,
+    value: Any?,
+    var recovered: Boolean,
+    var convert: ((Any?) -> Any?)? = null,
 )
-    : Parcelable
+    : Container(value), Parcelable
 {
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        if (value === UNINITIALIZED) return
-        dest.writeValue(true)
+        dest.writeSerializable(parcelableComponent?.java)
         val v: Any? = if (convert != null) convert!!(value) else value
         dest.writeValue(v)
     }
 
     companion object CREATOR : Parcelable.Creator<Saver> {
-        private var parcelableComponent: KClass<out Parcelable>? = null
-        private var parcelableLoader: ClassLoader? = null
-        private var recover: ((Any?) -> Any?)? = null
-
-        fun prepare(parcelableComponent: KClass<out Parcelable>?, recover: ((Any?) -> Any?)?){
-            this.parcelableComponent = parcelableComponent
-            parcelableLoader = parcelableComponent?.java?.classLoader
-            this.recover = recover
-        }
-
-        fun clear(){
-            parcelableComponent = null
-            parcelableLoader = null
-            recover = null
-        }
-
         override fun createFromParcel(parcel: Parcel): Saver {
-            @SuppressLint("ParcelClassLoader")
-            val tag = parcel.readValue(null)
+            @Suppress("UNCHECKED_CAST")
+            val parcelableJavaComponent =
+                // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                //     parcel.readSerializable(Class::class.java.classLoader, Class::class.java) as Class<out Parcelable>?
+                // else
+                @Suppress("DEPRECATION")
+                parcel.readSerializable() as Class<out Parcelable>?
 
             val value: Any? =
-                if (tag == null)
-                    UNINITIALIZED
-                else
-                    parcel.readValue(parcelableLoader)
-                    // convert Parcelable[] to the actual.
-                    // However, the inner Parcelable[] can't be parsed here.
-                    // This problem could only be fixed by the authority.
-                    .convertParcelableArrayIfNeeded(parcelableComponent)
-                    .updateIf({ recover != null }){ recover!!(it) }
+                    parcel.readValue(parcelableJavaComponent?.classLoader)
+                    .updateIf({ it is Array<*> && it.javaClass.componentType == Parcelable::class.java }){
+                        // convert Parcelable[] to the actual.
+                        // However, the inner Parcelable[] can't be parsed here.
+                        // This problem could only be fixed by the authority.
 
-            return Saver(value)
+                        requireNotNull(parcelableJavaComponent){
+                            "The parcelable component misses."
+                        }
+
+                        @Suppress("UNCHECKED_CAST")
+                        (it as Array<Parcelable>).convertToActual(parcelableJavaComponent)
+                    }
+
+            return Saver(parcelableJavaComponent?.kotlin, value, false)
         }
 
         override fun newArray(size: Int): Array<Saver?> = arrayOfNulls(size)
