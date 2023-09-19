@@ -47,11 +47,8 @@ dependencies {
     implementation libs.lifecycle.viewmodel.ktx
     implementation libs.coreKtx
 
-//    androidTestImplementation libs.mockito.core
-//    androidTestImplementation libs.bytebuddy.android
-//    androidTestImplementation libs.mockito.inline
-    androidTestImplementation libs.mockito.android
     androidTestImplementation libs.mockk
+    androidTestImplementation libs.mockk.agent
     androidTestImplementation libs.kotlin.test
     androidTestImplementation libs.junit
     androidTestImplementation libs.androidx.fragment.test
