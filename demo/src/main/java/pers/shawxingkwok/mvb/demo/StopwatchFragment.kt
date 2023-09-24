@@ -135,4 +135,17 @@ class StopwatchFragment : Fragment(R.layout.fragment_main) {
             isRunning.update { !it }
         }
     }
+
+    /* or separate actions
+    //region fixed actions
+    private fun setFixedListeners(){
+        binding.tvRight.onClick { switchIsRunning() }
+        // other fixed actions could also be put here
+    }
+
+    private fun switchIsRunning(){
+        isRunning.update { !it }
+    }
+    //endregion
+    */
 }
